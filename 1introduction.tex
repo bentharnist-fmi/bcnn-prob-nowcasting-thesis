@@ -1,14 +1,38 @@
 \chapter{Introduction}
 \label{chapter:intro}
 
+\begin{itemize}
+	\item Nowcasting precipitation is a societally important problem
+	\item Disaster damage control, flash flood prevention, etc
+	\item Predicting accurate short-term (0-6h) \textit{(nowcasts)} weather forecasts is not feasible with NWP
+	\item This is due to : Numerical stability not reached yet at time-scales such short. + computationally expensive
+	\item Dedicated nowcasting systems / algorithms to the rescue
+	\item Extrapolation / cell - tracking based algorithms are traditional : fairly good results, but become worse quickly, in well less than an hour
+	\item Recently, DL based precipitation nowcasting approaches have shown promising results delving into short-comings of traditional methods.
+\end{itemize}
+
 
 
 
 \section{Problem statement}
-
-
+\begin{itemize}
+\item accurate uncertainty quantification / probabilistic forecasts are necessary in order to quantify risk for real life-decision-making in meteorological crisis
+\item Current models: STEPS, LINDA have limited usefulness and are computationally expensive
+\item Also: No insight into the nature and validity of uncertainty
+\item Bayesian neural networks (BNN) provide a framework for forecast uncertainty estimation
+\item They have been proposed for use in problems where uncertainty quantification is primordial, such as autonomous vehicles and other risk-aware use cases, making them ideal candidates to tackle the current problem.
+\item In this work, we will approach the problem of making useful probabilistic precipitation nwocast by building an uncertainty-aware nowcasting deep neural network, turning a convolutional neural network into a BNN with stochastic variational inference. 
+\end{itemize}
 
 \section{Structure of the Thesis}
+
+The present work is organized as follows. Section two (II) contains background and a literature review on precipitation nowcasting and bayesian deep learning, aiming to familiarize the reader with essential concepts regarding the subject. Section three (III) describes the experimental details of the work performed, including the datasets used for training and verification, the models implemented, as well as verification methods and baselines. 
+
+\begin{itemize}
+	\item results
+	\item discussion
+	\item conclusions
+\end{itemize}
 \label{section:structure} 
 
 
