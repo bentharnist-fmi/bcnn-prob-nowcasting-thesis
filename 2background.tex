@@ -1,30 +1,95 @@
 \chapter{Background}
 \label{chapter:background} 
+\fixme{Estimate at start: 12-15 pages}
 
 \section{Precipitation Nowcasting}
 
 \subsection{Weather radars and radar products}
 
-\subsection{Overview of weather forecast methods}
+\fixme{7-9.6 Some radar reflectivity image, pic of some radar??,
+2h, 1.5-2 pages}
 
-\subsection{Precipitation nowcasting : classical methods}
+\begin{itemize}
+	\item \fixme{7-9.6, 2h}
+	\item physical functioning and paragraph on history of weather radar
+	\item reflectivity products, 2D and 3D
+	
+	\item \fixme{10-12.6, 2h}
+	\item from reflectivity to RR, limitations of reflectivity
+	\item double-polarization weather radars and Polarimetric products: info on microphysical processes
+\end{itemize}
+
+\begin{equation}
+\label{eq:z-r}
+	z = AR^b
+\end{equation}
+
+where $z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirically determined parameters. Reflectivity is calculated 
+
+\subsection{Overview of weather forecast methods}
+\fixme{17-18.6 using review paper 3h, 1 page}
+\begin{itemize}
+	\item Taking a broad look into the NWP process: Data collection, data assimilation, numerical prediction, postprocessing into forecast products
+	\item NWP in the context of precipitation forecasts
+\end{itemize}
+
+
+\subsection{Precipitation nowcasting : classical deterministic methods}
+\fixme{15.6-16.6 4h, 2 pages} 
+\begin{itemize}
+	\item Basic principles of advection equations. 
+	\item Chronological advancing, with +/- of each method
+\end{itemize}
+
+\subsection{Precipitation nowcasting : classical probabilistic methods}
+\fixme{19-20.6 4h, 1 page} 
+\begin{itemize}
+	\item approach types, ensemble etc
+\end{itemize}
 
 \subsection{Machine learning approaches to precipitation nowcasting}
-
+ \fixme{21-22.6 5h, 1.5-2 pages}
+\begin{itemize}
+	\item 
+\end{itemize}
 
 \section{Bayesian deep learning}
 
 \subsection{Learning probability distributions}
 
-\subsection{Intractable integrals and ways to deal with them}
-\subsubsection{MCMC based methods}
-\subsubsection{Variational inference}
-\subsubsection{Monte-Carlo dropout}
+\fixme{15-17.6, 1-2 pages on basic principles, history}
+\begin{itemize}
+	\item What motivation, first old studies
+	\item overview on Intractable integrals and ways to deal with them
+	\item MCMC, etc...
+	\item finish with switch to VI
+\end{itemize}
 
-\subsection{Applications of bayesian deep learning}
-\subsection{Predictive uncertainty estimation}
-\subsubsection{Epistemic and aleatoric uncertainty}
+\subsection{Variational inference}
 
-\section{Probabilistic machine learning in atmospheric sciences}
-Lit review
+\fixme{18-21.6, 3-4 pages}
+\begin{itemize}
+	\item deriving ELBO
+	\item Bayes by Backprop and SVI
+	\item Local reparametrization
+	\item Monte-Carlo dropout as VI
+	\item where else is VI used
+	\item problems with VI
+\end{itemize}
+
+
+\subsection{Predictive uncertainty estimation and decomposition}
+
+\fixme{9-14.6, 3h, main recent literature, find good ref on sources, 1 page}
+\begin{itemize}
+	\item Where does uncertainty come from
+	\item division into epistemic, aleatoric uncertainty in ML
+	\item Division for classification
+	\item Division for regression 
+	
+\end{itemize}
+
+\section{Related work}
+
+\fixme{Section to include if 2.1.4 and 2.1.5 become convoluted}
 

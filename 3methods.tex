@@ -1,24 +1,183 @@
 \chapter{Materials and Methods}
 \label{chapter:methods}
+\fixme{estimate : 10-12 pages}
+
+\section{Dataset and data selection}
+\label{section:data}
+
+As input data we use lowest elevation angle radar reflectivity composites with 1km spatial resolution and 5 minute temporal resolution from the Finnish Meteorological Institute, cropped into a 512x512 km region covering southern Finland. 
+
+Because lowest elevation angle horizontal reflectivity is a good estimator of precipitation at ground level, it is a natural data choice for building a nowcasting model. Also, composites made of these products are readily available at FMI which facilitated their retrieval for this work. Additionally, the bounding box covering southern Finland did not have any major data quality issues as opposed to other candidate datasets such as TAASRAD19, and missing data was labeled. All of these factors contributed to the choice of the dataset. 
+
+The dataset was chosen so that at first, a selection of rainy days were chosen as to correspond to the 100 days with the most pixels exceeding a 35 dBZ reflectivity threshold during the summer period spanning from May to September during years 2019, 2020, and 2021. 
+
+This dataset is then cleaned and filtered, after which it is divided into training, validation, and test sets. Cleaning the data involves first going through all timestamps and removing those with either partially or completely missing data. The filtering part consists of removing timestamps with less than 1\% of pixels containing reflectivity values exceeding 20 dBZ. Splitting of data into training, validation, and testing sets is performed by using a block sampling strategy \cite{schultz_can_2021} with 6 hour long blocks to prevent autocorrelation between consecutive radar images from invalidating independence between splits. The final split sizes were 15840 radar images for the training split, 2664 for the validation split, and 2448 for the test split. 
+
+% data transformation to dbz , to RR 
+% how was data read: PGM, hdf5 datasets made
+% hwo was read : 4 at a time 
 
 
-\section{Datasets and data selection}
+Radar composites are stored as gzip-compressed PGM composite files holding uint8 values, which are converted to reflectivity (dBZ) by applying the relation $\text{pixel\_value}_{\text{dBZ}} = -32 + 0.5 * \text{pixel\_value}_{\text{uint8}}$. For being fed into neural networks, the composites are read from HDF5 files as this improves reading speed on distributed storage systems. 
 
+
+From radar reflectivities, rainrate estimates were calculated using Eq. \ref{eq:z-r} solved for $R$, with empirically determined parameters $A=223$ and $b=1.53$, and $z = 10^{Z / 10}$, giving us
+
+\begin{equation}
+R = (10^{Z / 10} / 223)^{1/1.53}
+\end{equation}
+
+\fixme{15.6 Add domain presenting radar image, 2h}
+
+\fixme{1.5-2 pages}
+ 
 \section{Model}
 
 \subsection{The baseline: RainNet}
+
+\fixme{13.6, around 3h + (2-10) some hours for diagrams; take your time for them, 1 page}
+
+For the implementation of a Bayesian Convolutional Network, we use as our base model RainNet \cite{ayzel_rainnet_nodate}, which is itself heavily inspired by UNet and SegNet model families. 
+
+\fixme{Add RainNet training and/or architecture diagrams}
+
+\begin{itemize}
+	\item Describe loss functions and training procedure
+	\item describe mods from UNet, SegNet, its problems, good points
+	\item describe modifications made for this work
+\end{itemize}
+
 \subsection{Our model: a bayesian extension to RainNet}
+
+\fixme{14.6, describe main points, fix as you go, 2h, 1 page}
+
+\begin{itemize}
+	\item Converting weights into distributions
+	\item Gaussian prior, Gaussian posterior enabling closed-form KL-divergence
+	\item Data likelihood modeling: Homeoscedastic Gaussian likelihood
+	\item Training procedure and the Local Reparametrization Trick used. 
+
+\end{itemize}
 
 \section{verification methods}
 
-\subsection{Baseline models for verification}
-\subsubsection{Deterministic predictions}
-\subsubsection{Probabilistic predictions}
-\subsection{Prediction skill evaluation metrics}
-\subsubsection{Deterministic evaluation metrics}
-\subsubsection{Probabilistic evaluation metrics}
-
 \subsection{Evaluation of nowcast predictive uncertainty}
+\fixme{First version 12.6, fix as you go; $\sim 3$h, 1 page}
+
+\begin{itemize}
+	\item Exceedence probabilities
+	\item Describe mean and 2*std plots
+	\item Describe compoundedness of aleatoric, epistemic uncertainty in our data
+	\item describe ensemble sizes, their effect on results as motivation
+\end{itemize}
+
+\subsection{Baseline Deterministic Models}
+\fixme{10.6 Write models, inspire yourself from paper explainations, 30min per model, 1 page}
+\begin{itemize}
+	\item Lagrangian persistence (advection-extrapolation)
+	\item S-PROG
+	\item ANVIL
+	\item LINDA-D
+	\item RainNet (c.f. above)
+\end{itemize}
+
+\subsection{Baseline Probabilistic Models}
+\fixme{11.6 1h per model, 1 page}
+
+\begin{itemize}
+	\item STEPS
+	\item LINDA-P
+\end{itemize}
+
+\subsection{Deterministic Prediction skill evaluation metrics}
+
+Deterministic prediction skill scores were calculated in order to compare the raw predictive skill of ensemble nowcasts to the skill of deterministic models. Such comparison is an important facet of verification as low skill in deterministic scores would even for an otherwise competent model mean that it would benefit from being complemented by a stronger deterministic model. In the case of ensemble nowcasting, Deterministic scores were calculated for ensemble means. Implemented deterministic metrics are divided into four different categories, roughly complementing each others. These are continuous, categorical, and spatial scores, as well as radially-averaged power spectral density.  
+
+Continuous scores scores are as their name suggests distance metrics used for the evaluation of continuously valued predictions, i.e. regression tasks. The continuous scores used are Mean Error (ME) and Mean Absolute Error (MAE). ME is defined as 
+
+\begin{equation}
+	\text{ME} = \frac{1}{N}\sum_{i=1}^{N} y_i - \hat{y}_i,
+\end{equation}
+
+where we sum over the $i=1,\dots,N$ pixels in the radar image, $y$ denotes ground truth and $\hat{y}$ the prediction made. The principal utility of Mean Error is detection whether predictions are biased towards too low or too high rainrates at a certain point in time. On the other hand, 
+
+\begin{equation}
+	\text{MAE} = \frac{1}{N}\sum_{i=1}^{N} |y_i - \hat{y}_i|,
+\end{equation}
+
+only cares about the magnitude of the errors in predictions by taking the absolute value, so it gives an idea of the prediction skill over the images \textit{on average}. Nevertheless, this is not enough to accurately assess the skill of a nowcast method, because not all pixels are equally important. Additionally, A poor forecast may have good MAE and vice versa. To illustrate this, a forecast failing to predict localized intense rainfall, but otherwise accurately capturing light rainfall over large areas will usually have a small MAE but will have low operational usefulness.
+
+\fixme{small picture showing contingency table to help vizualization}
+
+This limited utility of continuous scores serves as a motivation to introduce categorical scores. These are based on the principle of comparing the presence or absence of a rain event in observations and predictions as defined by having a pixel exceeding a threshold value $R_{\text{THR}}$. The categorical scores are defined by dividing events into four categories, that are true positives (TP), i.e rain events that were correctly predicted, true negatives (TN), i.e. lack of rain event that was correctly predicted, false negatives (FN), i.e. rain that wasn't successfully predicted, and false positives (FP), i.e rain that was erroneously predicted. Scores derived from those quantities that were used are probability of detection (POD) defined as
+
+\begin{equation}
+	\text{POD} = \frac{\text{TP}}{\text{TP}+\text{FN}}
+\end{equation} 
+
+, which simply tells the probability that an event really occuring is correctly predicted. Next, false alarm rate (FAR) is calculated as 
+
+\begin{equation}
+	\text{FAR} = \frac{\text{FP}}{\text{TP}+\text{FP}}
+\end{equation}
+
+which reversely indicates the percentage of positively predicted events not actually happening. Critical success index (CSI), which is defined as 
+
+\begin{equation}
+	\text{CSI} = \frac{\text{TP}}{\text{TP}+\text{FN}+\text{FP}}
+\end{equation}
+
+is computed and aims to generally assess the performance of the forecast by taking the proportion of correct positive event predictions out of critically important cases, that is those excluding true negatives but including both false alarms (FP) and misses (FN). Lastly, the equitable threat score (ETS) defined as  
+
+\begin{equation}
+\begin{split}
+\text{ETS} = \frac{\text{TP} - rnd}{\text{TP}+\text{FN}+\text{FP}- rnd}, \\
+\text{where } rnd = \frac{(\text{TP}+\text{FN})(\text{TP}+\text{FP})}{\text{TP}+\text{FN}+\text{FP}+\text{TN}}
+\end{split}
+\end{equation}
+
+was computed. ETS aims to improve CSI assessment of forecast skill, by attempting to estimate the amount of random TP among the prediction using the term $rnd$, and remove that number of data points from the calculations.
+
+The $R_{\text{thr}}$ thresholds chosen for the performing verification are 0.5, 1.0, 5.0, 10.0, 20.0, and 30.0 mm/h. 0.5 mm/h corresponds to very light rainfall and should be easy to predict, while higher thresholds like 20.0 and 30.0 mm/h correspond to very heavy rainfall, which are very difficult to predict even for short leadtimes.
+
+\begin{itemize}
+	\item Spatial scores: FSS, Intensity scale using FSS
+	\item Radially averaved PSD 
+\end{itemize}
+
+In addition to evaluating prediction skill above rainrate thresholds, it is also important to be able to evaluate the nowcast at multiple scales. The reason for this is that bigger scales have more predictability, and so predicting smaller scales is more difficult while also being of high importance in the context of heavy localized rainfall. 
+
+%in fss, we can determine a threshold for acceptable skill to determine the scale at which nowcasts are good wrt lt 
+
+As such, spatial verification scores, namely Fraction Skill Score (FSS) and Intensity-scale verification using FSS are added to the panoply of metrics used. 
+
+\subsection{Probabilistic Prediction skill evaluation metrics}
+\fixme{8.6, write CRPS 45min, 1.5 pages}
+
+\fixme{When implementing write the rest in $\sim 3$h}
+\begin{itemize}
+	\item Continuous rank probability score (CRPS) as an extension to MAE
+	\item Rank histogram
+	\item Reliability diagram
+	\item ROC curve
+\end{itemize}
+
+\subsection{Practical points regarding verification experiments}
+
+ All of the scores described in the previous sections complement each others, and forecast skill is thus estimated as a combination of them, as no score is able to capture all of the facets of a great nowcast. 
+ 
+ In practice, predictions are calculated for all models for all the timestamps contained in the test set described in section \ref{section:data}. Predictions are computed for 36 timesteps, which is equivalent to 3 hours into the future with an interval of 5 minutes. After that, verification metrics are computed using the predictions of each model and they are averaged over the set for each leadtime of interest. 
+ 
+ In order to make sure that results are valid, all timestamps having any (even a single) observation missing are discarded, and similarly timestamps having any prediction from any model missing are also removed from calculations. Additionally, only pixels where data is present in the predictions of all models are counted in metric calculations. This is accomplished by calculating a common NaN mask using the logical OR operation over NaN values of each model, and subsequently applying that common mask to each prediction.
+ 
+\section{Software and resources}
+\fixme{Some diagram for visualizing grand scheme of workflow}
 
 
-\section{Experiments}
+The deep learning models were all implemented using the PyTorch framework and the PyTorch Lightning wrapper \cite{Falcon_PyTorch_Lightning_2019}. These libraries were chosen because of the combined ease of prototyping brought by PyTorch Lightning, and the maturity and flexibility of the parent framework PyTorch. RainNet was ported to PyTorch following the original Tensorflow implementation by Ayzel et al. \cite{Ayzel2020RainNet}. 
+
+As for the implementation of the probabilistic inference mechanisms for Bayesian Neural Networks, choice was made not to implement them by hand, but to rely on the machinery contained in the Probabilistic Programming Language (PPL) Pyro \cite{bingham2018pyro}, which is itself built on top of PyTorch and includes a fully-featured implementation of Stochastical Variational Inference (SVI). In order to facilitate the implementation task, the TyXe package \cite{ritter2021tyxe} was used. TyXe is a library designed to provide an interface simplifying the implementation of Bayesian Neural Networks using PyTorch and Pyro. A few of the reasons why TyXe was chosen are that it permits easily turning existing neural networks into BNNs without having to use hard-coded bayesian layers, and dynamically switching on-and-off the local reparametrization trick in layers. Some problems encountered include components of TyXe having difficulties working together with PyTorch Lightning abstractions.
+
+Verification experiments and non-deep-learning baseline models were ran and implemented using the open-source library Pysteps \cite{pulkkinen_pysteps_2019}. It provides implementations for all non-deep-learning models described as well as implementation of verification metric primitives used in this work, and tools for their visualization. 
+
+The computational resources from the Finnish IT Center for Science (CSC) were used for GPU intensive tasks such as training and calculating predictions with deep-learning models, and one of FMI's computational servers was used for performing other, more CPU-intensive operations such as predicting with baseline non-deep-learning models and calculating verification metrics. We trained the models on the CSC Puhti supercomputer, using one Nvidia V100 GPU with 32GB of VRAM, 64GB of RAM, and 10 cores from a 2.1 GHz Intel Xeon Gold 6230 CPU. As for the FMI server, it contains 2 Intel Xeon Gold 6138 2.0 GHz CPUs with each 20 cores and 2 threads by core, with 192GB of RAM. 
