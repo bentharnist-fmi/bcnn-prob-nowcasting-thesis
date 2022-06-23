@@ -30,15 +30,12 @@ From radar reflectivities, rainrate estimates were calculated using Eq. \ref{eq:
 R = (10^{Z / 10} / 223)^{1/1.53}
 \end{equation}
 
-\fixme{15.6 Add domain presenting radar image, 2h}
+\fixme{Add domain presenting image ? }
 
-\fixme{1.5-2 pages}
  
 \section{Model}
 
 \subsection{The baseline: RainNet}
-
-\fixme{13.6, around 3h + (2-10) some hours for diagrams; take your time for them, 1 page}
 
 For the implementation of a Bayesian Convolutional Network, we use as our base model RainNet \cite{ayzel_rainnet_nodate}, which is itself heavily inspired by UNet and SegNet model families. 
 
@@ -52,7 +49,7 @@ For the implementation of a Bayesian Convolutional Network, we use as our base m
 
 \subsection{Our model: a bayesian extension to RainNet}
 
-\fixme{14.6, describe main points, fix as you go, 2h, 1 page}
+
 
 \begin{itemize}
 	\item Converting weights into distributions
@@ -74,7 +71,6 @@ Uncertainties present in the data are coming from a diverse set of sources, incl
 
 
 \subsection{Baseline Deterministic Models}
-\fixme{10.6 Write models, inspire yourself from paper explainations, 30min per model, 1 page}
 \begin{itemize}
 	\item Lagrangian persistence (advection-extrapolation)
 	\item S-PROG
@@ -84,7 +80,6 @@ Uncertainties present in the data are coming from a diverse set of sources, incl
 \end{itemize}
 
 \subsection{Baseline Probabilistic Models}
-\fixme{11.6 1h per model, 1 page}
 
 \begin{itemize}
 	\item STEPS
@@ -193,7 +188,7 @@ ROC curves are conditioned on observation of an event, while reliability diagram
 
 The deep learning models were all implemented using the PyTorch framework and the PyTorch Lightning wrapper \cite{Falcon_PyTorch_Lightning_2019}. These libraries were chosen because of the combined ease of prototyping brought by PyTorch Lightning, and the maturity and flexibility of the parent framework PyTorch. RainNet was ported to PyTorch following the original Tensorflow implementation by Ayzel et al. \cite{Ayzel2020RainNet}. 
 
-As for the implementation of the probabilistic inference mechanisms for Bayesian Neural Networks, choice was made not to implement them by hand, but to rely on the machinery contained in the Probabilistic Programming Language (PPL) Pyro \cite{bingham2018pyro}, which is itself built on top of PyTorch and includes a fully-featured implementation of Stochastical Variational Inference (SVI). In order to facilitate the implementation task, the TyXe package \cite{ritter2021tyxe} was used. TyXe is a library designed to provide an interface simplifying the implementation of Bayesian Neural Networks using PyTorch and Pyro. A few of the reasons why TyXe was chosen are that it permits easily turning existing neural networks into BNNs without having to use hard-coded bayesian layers, and dynamically switching on-and-off the local reparametrization trick in layers. Some problems encountered include components of TyXe having difficulties working together with PyTorch Lightning abstractions.
+As for the implementation of the probabilistic inference mechanisms for Bayesian Neural Networks, choice was made not to implement them by hand, but to rely on the machinery contained in the Probabilistic Programming Language (PPL) Pyro \cite{bingham2018pyro}, which is itself built on top of PyTorch and includes a fully-featured implementation of Stochastical Variational Inference (SVI). In order to facilitate the implementation task, the TyXe package \cite{ritter2021tyxe} was used. TyXe is a library designed to provide an interface simplifying the implementation of Bayesian Neural Networks using PyTorch and Pyro. A few of the reasons why TyXe was chosen are that it permits easily turning existing neural networks into BNNs without having to use hard-coded bayesian layers, and dynamically switching on-and-off the local reparametrization trick and flipout in layers. Some problems encountered include components of TyXe having difficulties working together with PyTorch Lightning abstractions.
 
 Verification experiments and non-deep-learning baseline models were ran and implemented using the open-source library Pysteps \cite{pulkkinen_pysteps_2019}. It provides implementations for all non-deep-learning models described as well as implementation of verification metric primitives used in this work, and tools for their visualization. 
 

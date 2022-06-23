@@ -3,9 +3,15 @@
 
 \section{Goodness of results}
 \section{Validity of results}
+
+Variational approximations tend to underestimate uncertainty of learned distributions. \cite{bishop2006pattern, minka_family_nodate}. This can be observed from the rank histograms of BRN as a generally concave histogram shape compared to models based on stochastic perturbations. This means that the effect of variability of ensembles being less than that of observations was most indeed most pronouced in variational models, as one might expect. 
 \section{What could we learn from uncertainty}
+
+\section{What would have to be improved, potential problems in the study?}
+
+\section{Directions for further work}
 
 Decomposition of predictive uncertainty into aleatoric and epistemic uncertainties is not performed, as it was deemed out of scope for this work. Indeed, trying to model the uncertainty the radar image inputs is a separate problem which is not so much of interest in the domain of radar-based precipitation, as so much more can be done to improve performance by ameliorating radar scan fidelity, preprocessing, and choice. Despite of this, one could still view aleatoric uncertainty as a proxy to non-predictability of precipitation given starting conditions represented by the input frames. This could in the case of the iterative models presented at least serve as a metric to quantify the uncertainty created by feeding back in previous model outputs and could potentially allow the compound aleatoric and epistemic ensemble spread to better match the true distribution of the data. 
 
-\section{What would have to be improved, potential problems in the study?}
-\section{Directions for further work}
+% muunnos jälkikäteen jolla saa tasaiseksi  RH
+% RH loss funktioon

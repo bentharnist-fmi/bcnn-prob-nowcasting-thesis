@@ -6,15 +6,11 @@
 
 \subsection{Weather radars and radar products}
 
-\fixme{7-9.6 Some radar reflectivity image, pic of some radar??,
-2h, 1.5-2 pages}
 
 \begin{itemize}
-	\item \fixme{7-9.6, 2h}
 	\item physical functioning and paragraph on history of weather radar
 	\item reflectivity products, 2D and 3D
 	
-	\item \fixme{10-12.6, 2h}
 	\item from reflectivity to RR, limitations of reflectivity
 	\item double-polarization weather radars and Polarimetric products: info on microphysical processes
 \end{itemize}
@@ -27,7 +23,6 @@
 where $z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirically determined parameters. Reflectivity is calculated 
 
 \subsection{Overview of weather forecast methods}
-\fixme{17-18.6 using review paper 3h, 1 page}
 \begin{itemize}
 	\item Taking a broad look into the NWP process: Data collection, data assimilation, numerical prediction, postprocessing into forecast products
 	\item NWP in the context of precipitation forecasts
@@ -35,20 +30,17 @@ where $z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirical
 
 
 \subsection{Precipitation nowcasting : classical deterministic methods}
-\fixme{15.6-16.6 4h, 2 pages} 
 \begin{itemize}
 	\item Basic principles of advection equations. 
 	\item Chronological advancing, with +/- of each method
 \end{itemize}
 
 \subsection{Precipitation nowcasting : classical probabilistic methods}
-\fixme{19-20.6 4h, 1 page} 
 \begin{itemize}
 	\item approach types, ensemble etc
 \end{itemize}
 
 \subsection{Machine learning approaches to precipitation nowcasting}
- \fixme{21-22.6 5h, 1.5-2 pages}
 \begin{itemize}
 	\item 
 \end{itemize}
@@ -56,8 +48,6 @@ where $z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirical
 \section{Bayesian deep learning}
 
 \subsection{Learning probability distributions}
-
-\fixme{15-17.6, 1-2 pages on basic principles, history}
 \begin{itemize}
 	\item What motivation, first old studies
 	\item overview on Intractable integrals and ways to deal with them
@@ -67,20 +57,96 @@ where $z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirical
 
 \subsection{Variational inference}
 
-\fixme{18-21.6, 3-4 pages}
-\begin{itemize}
-	\item deriving ELBO
-	\item Bayes by Backprop and SVI
-	\item Local reparametrization
-	\item Monte-Carlo dropout as VI
-	\item where else is VI used
-	\item problems with VI
-\end{itemize}
+	\begin{itemize}
+		\item deriving ELBO
+		
+		
+		\item Bayes by Backprop and SVI
+		\item Local reparametrization
+		\item Monte-Carlo dropout as VI
+		\item where else is VI used
+		\item problems with VI
+	\end{itemize}
 
+	The evidence lower bound (ELBO), also known as variational free energy, is thus defined as 
+	
+	\begin{equation}
+	\label{eq:elbo}
+		\mathcal{F}(\mathcal{D}, \sigma) = 
+		\text{KL}[q(\pmb{w}|\sigma) || P(\pmb{w})] - \mathbb{E}_{q(\pmb{w}|\sigma)}[\log(P(\mathcal{D}|\pmb{w}))]
+	\end{equation}
 
+	In order to apply backpropagation, the standard deviation is parametrized with a parameter $\rho \in \mathbb{R}$, such that $\sigma = \log(1 + \exp(\rho)) \in (0,\infty)$. 
+	
+	This is known as the reparametrization trick. Weights $\pmb{w} = t(\sigma, \epsilon)$ are made deterministic functions of posterior parameters and the external stochastic noise $\epsilon$. This allows gradients to flow through the network as sampling operations are external. 
+	
+	\begin{itemize}
+		\item how does variance scale for basic re-parametrization trick?
+		\item more Details on LRT
+	\end{itemize}
+
+	Kingma et al. (2015) \cite{kingma2015} introduced a modification to the reparametrization trick, called the \textit{local reparametrization trick} (LRT). It works similarly but layer activations are sampled using $\epsilon$ rather than weights in order to reduce the computational cost, and even more importantly variances in a minibatch, allowing for faster training. 
+	
+	\begin{itemize}
+		\item Flipout and its possible advantages over LRT
+	\end{itemize}
+	
+	Using the reparametrization trick and 
+	
+	\begin{equation}
+	\frac{\partial}{\partial \sigma} \mathbb{E}_{q(\pmb{w}|\sigma)}[f(\pmb{w}, \sigma)] =
+	\mathbb{E}_{q(\epsilon)}[\frac{\partial f(\pmb{w}, \sigma)}{\partial \pmb{w}} + \frac{\partial \pmb{w}}{\partial \sigma}
+	\frac{\partial f(\pmb{w}, \sigma)}{\partial \pmb{w}}]
+	\end{equation}
+	
+	the ELBO cost function (Eq. \ref{eq:elbo}) can be rewritten as in a form amendable to minibatch optimization, yielding
+	
+	\begin{itemize}
+		\item Elaborate on the above proposition by Blundell et al
+	\end{itemize}
+	
+	\begin{equation}
+	\label{eq:mini_elbo}
+	\mathcal{F}(\mathcal{D}, \sigma) \approx \sum_{i=1}^{n}\log q(\pmb{w}^{(i)}|\sigma) - \log P(\pmb{w}^{(i)}) - \log P(\mathcal{D}|\pmb{w}^{(i)})
+	\end{equation}
+	
+	Here $\pmb{w}^{(i)}$ denotes the $i$:th monte-carlo sample drawn the the posterior.
+	
+	From the terms in eq. \ref{eq:mini_elbo}:
+	\begin{enumerate}
+		\item $\log q(\pmb{w}^{(i)}|\sigma)$ is the log likelihood of weights given the current posterior distribution.
+		
+		\item $-\log P(\pmb{w}^{(i)})$ is the negative log likelihood of the weights given the prior, which is usually not learned and serves as a regularization mechanism. 
+		
+		\item $- \log P(\mathcal{D}|\pmb{w}^{(i)})$ is the likelihood term, dependent on the data $\mathcal{D}$
+	\end{enumerate}
+	
+	\vspace*{2mm}
+	The first two terms are grouped together as the complexity cost, while the last term is also often called the complexity cost. 
+	
+	The cost to be minimizing can be again rewritten as 
+	
+	\begin{equation}
+		\mathcal{F}^\pi_i(\mathcal{D_i}, \sigma) = \pi_i \text{KL}[q(\pmb{w}|\sigma) || P(\pmb{w})] - \mathbb{E}_{q(\pmb{w}|\sigma)}[\log P(\mathcal{D}_i|\pmb{w})]
+	\end{equation}
+	
+	Here $\pi_i$ is the relative weighting of the complexity cost in the $i$:th minibatch. 
+	There are many ways to weigh the complexity cost against the likelihood cost, but an usual constraint is that $\pi \in [0,1]^M$ and $\sum_{i=1}^{M} \pi_i = 1$. Graves et al. (2011) \cite{graves2011} used equal weighting as $\pi_i = 1/M$, but Blundell et al. (2015) \cite{blundell2015} found the scheme $\pi_i =\frac{2^{M-i}}{2^M - 1}$ to offer better performance in their experiments. 
+
+	
+	The prior distribution $P(\pmb{w})$ is often chosen to be a diagonal Gaussian distribution, because it allows calculating the KL-divergence with regards to the Gaussian posterior analytically. A Gaussian prior placed on weights would be equivalent to L2-regularization, also known as weight decay. Recently, despite of the inability to analytically calculate KL-divergences using it, Gaussian scale mixture priors have also started to be used \cite{blundell2015, shridhar_comprehensive_2019} because of their properties facilitating optimization. These scale mixture priors, if containing two scales are defined as 
+	
+	\begin{equation}
+	\label{eq:gsm}
+		P(\pmb{w}) = 
+		\prod_{j}\alpha \mathcal{N}(\pmb{w}_j|0,\sigma_1^2) + (1-\alpha)\mathcal{N}(\pmb{w}_j|0,\sigma_2^2)
+	\end{equation}  
+	
+	where $\sigma_1 > \sigma_2$ and often $\sigma_2 \ll 1$, $\alpha$ is the relative weights of the two scales, and $\pmb{w}_j$ is the $j$:th weight of the neural network. 
+	
 \subsection{Predictive uncertainty estimation and decomposition}
 
-\fixme{9-14.6, 3h, main recent literature, find good ref on sources, 1 page}
+\fixme{ find good ref on sources}
 \begin{itemize}
 	\item Where does uncertainty come from
 	\item division into epistemic, aleatoric uncertainty in ML
