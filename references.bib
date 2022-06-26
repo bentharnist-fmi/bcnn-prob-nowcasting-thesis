@@ -13,6 +13,21 @@
 	file = {arXiv Fulltext PDF:/home/harnist/Zotero/storage/LS296KMN/Shridhar et al. - 2019 - A Comprehensive guide to Bayesian Convolutional Ne.pdf:application/pdf;arXiv.org Snapshot:/home/harnist/Zotero/storage/XVEFISX3/1901.html:text/html},
 }
 
+@article{blundell_weight_2015,
+	title = {Weight {Uncertainty} in {Neural} {Networks}},
+	url = {http://arxiv.org/abs/1505.05424},
+	abstract = {We introduce a new, efﬁcient, principled and backpropagation-compatible algorithm for learning a probability distribution on the weights of a neural network, called Bayes by Backprop. It regularises the weights by minimising a compression cost, known as the variational free energy or the expected lower bound on the marginal likelihood. We show that this principled kind of regularisation yields comparable performance to dropout on MNIST classiﬁcation. We then demonstrate how the learnt uncertainty in the weights can be used to improve generalisation in non-linear regression problems, and how this weight uncertainty can be used to drive the exploration-exploitation trade-off in reinforcement learning.},
+	language = {en},
+	urldate = {2022-03-21},
+	journal = {arXiv:1505.05424 [cs, stat]},
+	author = {Blundell, Charles and Cornebise, Julien and Kavukcuoglu, Koray and Wierstra, Daan},
+	month = may,
+	year = {2015},
+	note = {arXiv: 1505.05424},
+	keywords = {Computer Science - Machine Learning, Statistics - Machine Learning},
+	file = {Blundell et al. - 2015 - Weight Uncertainty in Neural Networks.pdf:/home/harnist/Zotero/storage/3UGR5FY5/Blundell et al. - 2015 - Weight Uncertainty in Neural Networks.pdf:application/pdf},
+}
+
 @article{ayzel_rainnet_nodate,
 	title = {{RainNet} v1.0: a convolutional neural network for radar-based precipitation nowcasting},
 	abstract = {In this study, we present RainNet, a deep convolutional neural network for radar-based precipitation nowcasting. Its design was inspired by the U-Net and SegNet families of deep learning models which were originally designed for binary segmentation tasks. RainNet was trained to predict continuous precipitation intensities at a lead time of ﬁve minutes, using several years of quality-controlled weather radar composites provided by the German Weather Service (DWD). That data 5 set covers Germany with a spatial domain of 900×900 km, and has a resolution of 1 km in space and 5 minutes in time. Independent veriﬁcation experiments were carried out on eleven summer precipitation events from 2016 to 2017. In order to achieve a lead time of one hour, a recursive approach was implemented by using RainNet predictions at ﬁve minutes lead time as model input for longer lead times. In the veriﬁcation experiments, trivial Eulerian persistence and a conventional model based on optical ﬂow served as benchmarks. The latter is available in the rainymotion library, and had previously been shown 10 to outperform DWD’s operational nowcasting model for the same set of veriﬁcation events.},
@@ -55,6 +70,21 @@ This article is part of the theme issue ‘Machine learning for weather and clim
 	keywords = {deep learning, machine learning, numerical weather prediction, spatiotemporal pattern recognition, weather AI},
 	pages = {20200097},
 	file = {Full Text PDF:/home/harnist/Zotero/storage/WRWXYS7G/Schultz et al. - 2021 - Can deep learning beat numerical weather predictio.pdf:application/pdf},
+}
+
+@article{kingma_variational_2015,
+	title = {Variational {Dropout} and the {Local} {Reparameterization} {Trick}},
+	url = {http://arxiv.org/abs/1506.02557},
+	abstract = {We investigate a local reparameterizaton technique for greatly reducing the variance of stochastic gradients for variational Bayesian inference (SGVB) of a posterior over model parameters, while retaining parallelizability. This local reparameterization translates uncertainty about global parameters into local noise that is independent across datapoints in the minibatch. Such parameterizations can be trivially parallelized and have variance that is inversely proportional to the minibatch size, generally leading to much faster convergence. Additionally, we explore a connection with dropout: Gaussian dropout objectives correspond to SGVB with local reparameterization, a scale-invariant prior and proportionally ﬁxed posterior variance. Our method allows inference of more ﬂexibly parameterized posteriors; speciﬁcally, we propose variational dropout, a generalization of Gaussian dropout where the dropout rates are learned, often leading to better models. The method is demonstrated through several experiments.},
+	language = {en},
+	urldate = {2022-04-23},
+	journal = {arXiv:1506.02557 [cs, stat]},
+	author = {Kingma, Diederik P. and Salimans, Tim and Welling, Max},
+	month = dec,
+	year = {2015},
+	note = {arXiv: 1506.02557},
+	keywords = {Computer Science - Machine Learning, Statistics - Computation, Statistics - Machine Learning},
+	file = {Kingma et al. - 2015 - Variational Dropout and the Local Reparameterizati.pdf:/home/harnist/Zotero/storage/3WLN42UA/Kingma et al. - 2015 - Variational Dropout and the Local Reparameterizati.pdf:application/pdf},
 }
 
 @article{bowler_steps_2006,
@@ -238,4 +268,41 @@ Section: Monthly Weather Review},
 	author = {Minka, Thomas P},
 	pages = {75},
 	file = {Minka - A family of algorithms for approximate Bayesian in.pdf:/home/harnist/Zotero/storage/CF5FF3JY/Minka - A family of algorithms for approximate Bayesian in.pdf:application/pdf},
+}
+
+@article{graves_practical_2011,
+	title = {Practical {Variational} {Inference} for {Neural} {Networks}},
+	abstract = {Variational methods have been previously explored as a tractable approximation to Bayesian inference for neural networks. However the approaches proposed so far have only been applicable to a few simple network architectures. This paper introduces an easy-to-implement stochastic variational method (or equivalently, minimum description length loss function) that can be applied to most neural networks. Along the way it revisits several common regularisers from a variational perspective. It also provides a simple pruning heuristic that can both drastically reduce the number of network weights and lead to improved generalisation. Experimental results are provided for a hierarchical multidimensional recurrent neural network applied to the TIMIT speech corpus.},
+	language = {en},
+	author = {Graves, Alex},
+	year = {2011},
+	pages = {9},
+	file = {Graves - Practical Variational Inference for Neural Network.pdf:/home/harnist/Zotero/storage/RZVB4ZH8/Graves - Practical Variational Inference for Neural Network.pdf:application/pdf},
+}
+
+@article{hinton_keeping_1993,
+	title = {Keeping {Neural} {Networks} {Simple} by {Minimizing} the {Description} {Length} of the {Weights}},
+	abstract = {Supervised neural networks generalize well if there is much less information in the weights than there is in the output vectors of the training cases. So during learning, it is important to keep the weights simple by penalizing the amount of information they contain. The amount of information in a weight can be controlled by adding Gaussian noise and the noise level can be adapted during learning to optimize the trade-off between the expected squared error of the network and the amount of information in the weights. We describe a method of computing the derivatives of the expected squared error and of the amount of information in the noisy weights in a network that contains a layer of non-linear hidden units. Provided the output units are linear, the exact derivatives can be computed efficiently without time-consuming Monte Carlo simulations. The idea of minimizing the amount of information that is required to communicate the weights of a neural network leads to a number of intereating schemes for encoding the weights.},
+	language = {en},
+	author = {Hinton, E},
+	year = {1993},
+	pages = {9},
+	file = {Hinton - Keeping Neural Networks Simple by Minimizing the D.pdf:/home/harnist/Zotero/storage/J8JL6VNU/Hinton - Keeping Neural Networks Simple by Minimizing the D.pdf:application/pdf},
+}
+
+@misc{wen_flipout_2018,
+	title = {Flipout: {Efficient} {Pseudo}-{Independent} {Weight} {Perturbations} on {Mini}-{Batches}},
+	shorttitle = {Flipout},
+	url = {http://arxiv.org/abs/1803.04386},
+	doi = {10.48550/arXiv.1803.04386},
+	abstract = {Stochastic neural net weights are used in a variety of contexts, including regularization, Bayesian neural nets, exploration in reinforcement learning, and evolution strategies. Unfortunately, due to the large number of weights, all the examples in a mini-batch typically share the same weight perturbation, thereby limiting the variance reduction effect of large mini-batches. We introduce flipout, an efficient method for decorrelating the gradients within a mini-batch by implicitly sampling pseudo-independent weight perturbations for each example. Empirically, flipout achieves the ideal linear variance reduction for fully connected networks, convolutional networks, and RNNs. We find significant speedups in training neural networks with multiplicative Gaussian perturbations. We show that flipout is effective at regularizing LSTMs, and outperforms previous methods. Flipout also enables us to vectorize evolution strategies: in our experiments, a single GPU with flipout can handle the same throughput as at least 40 CPU cores using existing methods, equivalent to a factor-of-4 cost reduction on Amazon Web Services.},
+	urldate = {2022-06-23},
+	publisher = {arXiv},
+	author = {Wen, Yeming and Vicol, Paul and Ba, Jimmy and Tran, Dustin and Grosse, Roger},
+	month = apr,
+	year = {2018},
+	note = {Number: arXiv:1803.04386
+arXiv:1803.04386 [cs, stat]},
+	keywords = {Computer Science - Machine Learning, Statistics - Machine Learning},
+	file = {arXiv Fulltext PDF:/home/harnist/Zotero/storage/DF573ZIF/Wen et al. - 2018 - Flipout Efficient Pseudo-Independent Weight Pertu.pdf:application/pdf;arXiv.org Snapshot:/home/harnist/Zotero/storage/NYV22LMI/1803.html:text/html},
 }

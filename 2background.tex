@@ -55,7 +55,16 @@ where $z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirical
 	\item finish with switch to VI
 \end{itemize}
 
+	Neural networks are extremely useful model that on the other hand are very complex, in the sense that they have many optimizable parameters. The effect of this is that they are sensible to \textit{overfitting}, meaning that if left unchecked they will learn spurious patterns in the data, over-adapting to the training dataset and worsening generalization ability. In order to counter this, different mechanisms exist that bias the neural network towards learning simpler representations that have better generalization ability when presented with out-of-training-data examples. This concept is known as \textit{regularization}. Over the past decades, many regularization mechanisms have been successfully developed and applied to the training of deep neural networks. Notable examples include Dropout and weight decay, also known as L2-regularization.  
+	
+	One caveat of these classical regularization methods is that they do not enable representing the uncertainty of neural networks in unexplored regions, although they do improve performance in them. 
+
 \subsection{Variational inference}
+
+
+	Variational inference as a means of training bayesian neural networks was first introduced by Hinton and Camp in 1993 \cite{hinton_keeping_1993}. However it was not used for a long time before breakthroughs by Graves et al. (2011) \cite{graves_practical_2011} and Blundell et al. (2015) \cite{blundell_weight_2015} permitted its use in large-scale neural networks. 
+	
+	The main idea behind variational inference is to turn the problem of finding the intractable true bayesian posterior behind 
 
 	\begin{itemize}
 		\item deriving ELBO
@@ -85,7 +94,7 @@ where $z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirical
 		\item more Details on LRT
 	\end{itemize}
 
-	Kingma et al. (2015) \cite{kingma2015} introduced a modification to the reparametrization trick, called the \textit{local reparametrization trick} (LRT). It works similarly but layer activations are sampled using $\epsilon$ rather than weights in order to reduce the computational cost, and even more importantly variances in a minibatch, allowing for faster training. 
+	Kingma et al. (2015) \cite{kingma_variational_2015} introduced a modification to the reparametrization trick, called the \textit{local reparametrization trick} (LRT). It works similarly but layer activations are sampled using $\epsilon$ rather than weights in order to reduce the computational cost, and even more importantly variances in a minibatch, allowing for faster training. 
 	
 	\begin{itemize}
 		\item Flipout and its possible advantages over LRT
@@ -131,10 +140,10 @@ where $z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirical
 	\end{equation}
 	
 	Here $\pi_i$ is the relative weighting of the complexity cost in the $i$:th minibatch. 
-	There are many ways to weigh the complexity cost against the likelihood cost, but an usual constraint is that $\pi \in [0,1]^M$ and $\sum_{i=1}^{M} \pi_i = 1$. Graves et al. (2011) \cite{graves2011} used equal weighting as $\pi_i = 1/M$, but Blundell et al. (2015) \cite{blundell2015} found the scheme $\pi_i =\frac{2^{M-i}}{2^M - 1}$ to offer better performance in their experiments. 
+	There are many ways to weigh the complexity cost against the likelihood cost, but an usual constraint is that $\pi \in [0,1]^M$ and $\sum_{i=1}^{M} \pi_i = 1$. Graves et al. (2011) \cite{graves_practical_2011} used equal weighting as $\pi_i = 1/M$, but Blundell et al. (2015) \cite{blundell_weight_2015} found the scheme $\pi_i =\frac{2^{M-i}}{2^M - 1}$ to offer better performance in their experiments. 
 
 	
-	The prior distribution $P(\pmb{w})$ is often chosen to be a diagonal Gaussian distribution, because it allows calculating the KL-divergence with regards to the Gaussian posterior analytically. A Gaussian prior placed on weights would be equivalent to L2-regularization, also known as weight decay. Recently, despite of the inability to analytically calculate KL-divergences using it, Gaussian scale mixture priors have also started to be used \cite{blundell2015, shridhar_comprehensive_2019} because of their properties facilitating optimization. These scale mixture priors, if containing two scales are defined as 
+	The prior distribution $P(\pmb{w})$ is often chosen to be a diagonal Gaussian distribution, because it allows calculating the KL-divergence with regards to the Gaussian posterior analytically. A Gaussian prior placed on weights would be equivalent to L2-regularization, also known as weight decay. Recently, despite of the inability to analytically calculate KL-divergences using it, Gaussian scale mixture priors have also started to be used \cite{blundell_weight_2015, shridhar_comprehensive_2019} because of their properties facilitating optimization. These scale mixture priors, if containing two scales are defined as 
 	
 	\begin{equation}
 	\label{eq:gsm}
