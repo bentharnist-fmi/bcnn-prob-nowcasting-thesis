@@ -30,6 +30,7 @@ where $z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirical
 
 
 \subsection{Precipitation nowcasting : classical deterministic methods}
+\label{section:classic_nowcast}
 \begin{itemize}
 	\item Basic principles of advection equations. 
 	\item Chronological advancing, with +/- of each method
@@ -45,26 +46,35 @@ where $z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirical
 	\item 
 \end{itemize}
 
+Multi-Scale Structural Similarity Index (MS-SSIM), originally an image quality assessment metric \cite{wang_multiscale_2003}, has recently started to be used as a loss function in deep learning, particularly in image reconstruction tasks. One of its main assets is that it or its single-scale counterpart (SSIM )has been shown to reduce blurring in image reconstruction \cite{zhao_loss_2017} making it a good candidate loss function for nowcasting with neural networks, as it has been seen that these models suffer from excessive blurring, effectively minimizing standard loss functions such as Mean Squared Error (MSE), but failing to predict useful patterns such as heavy localized rainfall. Indeed in recent years, there has been some cases where MS-SSIM or SSIM started have started to be used in 
+
 \section{Bayesian deep learning}
 
 \subsection{Learning probability distributions}
 \begin{itemize}
-	\item What motivation, first old studies
-	\item overview on Intractable integrals and ways to deal with them
-	\item MCMC, etc...
-	\item finish with switch to VI
+	\item first old studies
+	\item link overfitting to the bias-variance trade-off
 \end{itemize}
 
 	Neural networks are extremely useful model that on the other hand are very complex, in the sense that they have many optimizable parameters. The effect of this is that they are sensible to \textit{overfitting}, meaning that if left unchecked they will learn spurious patterns in the data, over-adapting to the training dataset and worsening generalization ability. In order to counter this, different mechanisms exist that bias the neural network towards learning simpler representations that have better generalization ability when presented with out-of-training-data examples. This concept is known as \textit{regularization}. Over the past decades, many regularization mechanisms have been successfully developed and applied to the training of deep neural networks. Notable examples include Dropout and weight decay, also known as L2-regularization.  
 	
-	One caveat of these classical regularization methods is that they do not enable representing the uncertainty of neural networks in unexplored regions, although they do improve performance in them. 
+	One caveat of these classical regularization methods is that they do not enable representing the uncertainty of neural networks in unexplored regions, although they do improve performance in them. As it has understandably many benefits to make a neural network able to say "I don't know", a way to represent different plausible scenarios arising with novel data is needed. 
+	
+	There are two ways of approaching uncertainty estimation in neural networks. One is to directly model the uncertainty of predictions, and the other is to model the uncertainty of model parameters. These two are often complementary, but The latter approach has the benefit of providing implicit regularization to the network and is indeed the primary focus of this work. Learning this uncertainty of model parameters is most often accomplished using Bayesian Neural Networks (BNN). Strictly speaking, BNN are a class of stochastic neural networks, that is NN with stochastic components, where the parameters are probability distributions that are estimated using Bayesian inference.
+	
+	In a Bayesian framework, the posterior distributions of parameters are estimated conditioned on data and a prior. Because exact Bayesian inference involves dealing with intractable integrals, it is not doable to solve them for real-world neural networks having thousands to millions of parameters. As such, two broad categories of inference methods have been developed for use in BNN. The first one is using Markov-Chain Monte-Carlo (MCMC) to sample from posterior distributions. MCMC works well for smaller-scale models, but it is limited to only thousands of parameters because of the computational expensiveness of Markov-Chain simulations. 
+	
+	The second inference method category is Variational Inference (VI). The main idea behind variational inference is to turn the problem of finding the intractable true bayesian posterior into that of finding the closest distribution from a limited distribution family (the variational posterior) with regards to the true posterior. This turns the problem of solving an integral into that of optimization, allowing the use of classical unconstrained optimization methods. 
+	
+	
 
 \subsection{Variational inference}
+\label{section:vi}
 
 
 	Variational inference as a means of training bayesian neural networks was first introduced by Hinton and Camp in 1993 \cite{hinton_keeping_1993}. However it was not used for a long time before breakthroughs by Graves et al. (2011) \cite{graves_practical_2011} and Blundell et al. (2015) \cite{blundell_weight_2015} permitted its use in large-scale neural networks. 
 	
-	The main idea behind variational inference is to turn the problem of finding the intractable true bayesian posterior behind 
+	 
 
 	\begin{itemize}
 		\item deriving ELBO

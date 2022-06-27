@@ -6,7 +6,7 @@ From now on are presented the data and models used for experiments, and how thos
 \section{Dataset and data selection}
 \label{section:data}
 
-As input data we use lowest elevation angle radar reflectivity composites with 1km spatial resolution and 5 minute temporal resolution from the Finnish Meteorological Institute, cropped into a 512x512 km region covering southern Finland. 
+As input data we use lowest elevation angle radar reflectivity composites with 1km spatial resolution and 5 minute temporal resolution from the Finnish Meteorological Institute, cropped into a 512x512 km region covering southern Finland. The domain and bounding box are illustrated in Figure \ref{fig:domain}.
 
 Because lowest elevation angle horizontal reflectivity is a good estimator of precipitation at ground level, it is a natural data choice for building a nowcasting model. Radar composites made of these radar scans are readily available at FMI which facilitated their retrieval for this work. Additionally, the bounding box covering southern Finland did not have any major data quality issues standing out as opposed to other candidate datasets, and finally missing pixels were correctly labeled. All of these factors contributed to the choice of the data source. 
 
@@ -21,56 +21,126 @@ This dataset is then cleaned and filtered, after which it is divided into traini
 % hwo was read : 4 at a time 
 
 
-Radar composites are stored as gzip-compressed PGM composite files holding uint8 values, which are converted to reflectivity (dBZ) by applying the relation $\text{pixel\_value}_{\text{dBZ}} = -32 + 0.5 * \text{pixel\_value}_{\text{uint8}}$. For being fed into neural networks, the composites are read from HDF5 files as this improves reading speed on distributed storage systems. 
+Radar composites are stored as gzip-compressed PGM composite files holding uint8 values, which are converted to reflectivity (dBZ) by applying the relation $\text{pixel\_value}_{\text{dBZ}} = -32 + 0.5 * \text{pixel\_value}_{\text{uint8}}$. When fed into neural networks, the composites are read from HDF5 files as this improves reading speed on distributed storage systems. 
 
-
-From radar reflectivities, rainrate estimates were calculated using Eq. \ref{eq:z-r} solved for $R$, with empirically determined parameters $A=223$ and $b=1.53$, and $z = 10^{Z / 10}$, giving us
+From radar reflectivities, rainrate estimates were calculated using Eq. \ref{eq:z-r} solved for $R$, with empirically determined parameters $A=223$ and $b=1.53$, and $z = 10^{Z / 10}$, giving us a relation of
 
 \begin{equation}
 R = (10^{Z / 10} / 223)^{1/1.53}
 \end{equation}
 
-\fixme{Add domain presenting image ? }
+for the current data. 
 
- 
+\begin{figure}
+	\label{fig:domain}
+	\missingfigure[figwidth=12cm, figheight=10cm]{FMI radar domain, bbox}
+	\caption{FMI radar domain and the chosen bounding box covering southern Finland.}
+\end{figure} 
+
+
 \section{Model}
 
 \subsection{The baseline: RainNet}
+\label{section:rainnet}
 
-For the implementation of a Bayesian Convolutional Network, we use as our base model RainNet \cite{ayzel_rainnet_nodate}, which is itself heavily inspired by UNet and SegNet model families. 
+For the implementation of a Bayesian Convolutional Network, we use as our base functional model RainNet \cite{ayzel_rainnet_nodate}, which is itself heavily inspired by U-Net and SegNet model families. RainNet just like those families adopts a U-shaped encoder-decoder architecture. The encoder is composed of successive pooling and convolutional layers, reducing image sizes passed to the next layer while increasing the number of filters. The decoder part adopts a mirror archictecture of successive upsampling and convolutional layers, increasing the image size while reducing the number of filters. There is 5 levels in the encoder-decoder structure, just like in SegNet. Additionally, there are skip connections from the encoder to the decoder branch, carrying higher-level filter maps through, just like in U-Net. This is done in order not to lose smaller spatial scale details with pooling.  
 
-\fixme{Add RainNet training and/or architecture diagrams}
+\begin{figure}[h]
+	\label{fig:rainnet}
+	\missingfigure[figwidth=12cm, figheight=8cm]{RainNet architecture diagram with vector graphics}
+	\caption{The functional CNN architecture used for this work, adapted from RainNet.}
+\end{figure}
 
-\begin{itemize}
-	\item Describe loss functions and training procedure
-	\item describe mods from UNet, SegNet, its problems, good points
-	\item describe modifications made for this work
-\end{itemize}
+The convolutional filters have a filter size of 3, with padding designed to preserve image shape, and a stride of one. Finally, the last convolutional layer in the network has a filter size of 1 with no padding, and it is followed by a linear activation output layer, i.e. no (nonlinear) activation function. The network does not contain any fully-connected layers, and in total consists of 31.4M parameters. RainNet works by feeding in 4 consecutive radar images, with the physically speaking temporal dimension represented in the channel dimension of the tensor. As the output of the network, we get one output radar image, representing the next predicted frame. In order to make predictions at further leadtimes, the predictions are fed back to the inputs one-by-one in an iterative process. 
 
-\subsection{Our model: a bayesian extension to RainNet}
+The network is trained by calculating a loss function between observed and predicted radar images. This loss function is originally the LogCosh loss, as described in Ayzel et al.'s paper \cite{ayzel_rainnet_nodate}. In addition to that loss, the use of Multi-Scale Structural Similarity Index (MS-SSIM) \cite{wang_multiscale_2003} as a loss function was also implemented in this work. MS-SSIM is a loss function, originally an 
+
+The rainrates were scaled using a logarithmic transformation $x_{\log} = \ln(x + 0.01)$ For the use of LogCosh loss, and they were additionally shifted upwards by a factor of 5 and then scaled down by a factor of 10 to fit into the range of 0 to 1 when using MS-SSIM loss. One benefit of using MS-SSIM instead of Logcosh loss is that MS-SSIM better preserves structural details of predictions such as edges and gradients, which helps with nowcasting higher reflectivity values. This same behaviour however often produces diverging nowcasts, characterized by loss of total precipitation mass and unphysically high precipitation intensities at further leadtimes. 
+
+This diverging behavior is alleviated by calculating the loss function for nowcasts done over several leadtimes, making the resulting learned network more temporally stable. Hence for training, the predictions are calculated for 6 leadtimes (30 minutes ahead) and the loss is calculated such that each prediction leadtime is weighted equally. Using multiple leadtimes is also implemented for the LogCosh loss function. MS-SSIM was calculated using a data range parameter of 1.0 and equal scale weights of $[0.2, 0.2, 0.2, 0.2, 0.2]$ ordered from smallest to biggest, as opposite to the scaling optimized for visual perception introduced by Wang et al. \cite{wang_multiscale_2003} in the context of using MS-SSIM as a visual quality assessment tool. 
 
 
+\subsection{BCNN: a Bayesian extension to RainNet}
 
-\begin{itemize}
-	\item Converting weights into distributions
-	\item Gaussian prior, Gaussian posterior enabling closed-form KL-divergence
-	\item Data likelihood modeling: Homeoscedastic Gaussian likelihood
-	\item Training procedure and the Local Reparametrization Trick used. 
+\fixme{BCNN is a working name, find potentially better name}
 
-\end{itemize}
+BCNN is the Bayesian extension of the RainNet made for this work. In the network, posterior probability distributions of weights and biases are modeled as diagonal Gaussian distributions and optimization is carried out using variants of the Bayes-by-Backprop algorithm described by Blundell et al. (2015) \cite{blundell_weight_2015}, minimizing the ELBO loss function as described in section \ref{section:vi}. Posteriors for all parameters are initialized identically to a mean $\mu$ of 0 and a variance $\sigma$ of 1e-4. The Local Reparametrization Trick (LRT) \cite{kingma_variational_2015} and Flipout \cite{wen_flipout_2018} are both implemented and attempted for reducing gradient variance. 
+
+As for the prior distribution, two variants are implemented. One being a diagonal Gaussian prior $P(\pmb{w}) \sim \mathcal{N}(0,0.1)$ and the second a Gaussian scale mixture prior as defined in Eq. \ref{eq:gsm}, with $\alpha = 0.5$ and $\sigma_1, \sigma_2 = 0.3, 0.03$. The scale-mixture prior might enable faster initialization and more accurate asymptotic behavior, but the Gaussian prior has more convenient mathematical properties, as it enables calculating KL-divergences in closed form when combined with a Gaussian posterior as in here, using the analytical expression
+
+\begin{equation}
+\begin{split}
+D_{KL}(q(\mathcal{D}|\pmb{w}) || P(\pmb{w})) =
+\frac{1}{2}[\log \frac{|\sigma_P|}{|\sigma_q|}
+- d \\
++ (\mu_q - \mu_P)^T \sigma_P^{-1}(\mu_q - \mu_P)
++ tr\{\sigma_P^{-1}\sigma_q\}
+]
+\end{split}
+\end{equation}
+
+where $q$ and $P$ denote the multivariate diagonal posterior and prior, $\mu_q$ and $\mu_P$ their respective means, $\sigma_P$ and $\sigma_q$ their respective standard deviations and  $d$ the identity matrix of the number of dimensions equal to that of the distributions. 
+
+In BCNN, the radar images were scaled between 0 and 1 using the same procedure as described for the MS-SSIM loss function in the context of RainNet in section \ref{section:rainnet}. The data likelihood cost was modeled as Homoscedastic Gaussian likelihood, defined by 
+
+\begin{equation}
+	\mathcal{L}_{Gauss}(y, \hat{y}) = \frac{1}{N} \sum_{i=1}^{N} \frac{1}{2\sigma^2}||y_i - \hat{y}_i||^2 
+	+ \frac{1}{2} \log \sigma^2
+\end{equation}
+
+where $i = 1 \dots N$ indexes the number of pixels in the images, and $\sigma$ here refers to the observational noise parameter. In homoscedastic gaussian likelihood, aleatoric uncertainty, characterized by $\sigma$ is assumed to be the same for all the data. This parameter can be learned or left constant. The latter is done in the present work, and a value of 0.02 is chosen as a guess, aiming to represent the uncertainty inherent to radar images. 
+
+Multiple procedures for weighting the complexity cost against the likelihood cost are implemented. In addition to the equal weighting scheme from Graves et al. \cite{graves_practical_2011} and the batch index dependent scheme from Blundell et al. \cite{blundell_weight_2015}, a scheme reducing the weight of the complexity cost each epoch, defined as $\pi_j = 2^{-j}$, where $j=0,1,\dots$ is the current epoch, is implemented to provide better potential fitting ability, as the equal weight scheme sometimes provides excessive regularization and the second scheme has problems with converging when using smaller batch sizes as in this work.
+
+
+\begin{figure}[ht]
+	\begin{center}
+		\subfigure[Training procedure for the BCNN.]{
+			\label{fig:training}
+			\missingfigure{Training diagram}
+		}
+		\subfigure[Inference procedure for generating ensemble nowcasts with the BCNN.]{
+			\label{fig:inference}
+			\missingfigure{Inference diagram}
+		}
+		\caption{Training and inference processes}
+		\label{fig:training_inference_diagram}
+	\end{center}
+\end{figure}
+
+The predictions are made by simply performing a forward pass through the network, which samples the parameters and produces a Monte-Carlo (MC) sample, i.e. an ensemble member. Predictions for further leadtimes are made in the same way as with the deterministic RainNet, that is by iteratively re-plugging the output, now a MC sample, into the inputs of the network. It is important to note that stochasticity is preserved because parameters are re-sampled at each step of the iterative prediction. Ensembles are produced by repeating this process multiple times independently, that is, such that one initial MC sample will lead to a no more than a single new MC sample each leadtime. Sampling is done this way to avoid the problem of exponential growth that would appear if each sample at leadtime $t$ would yield more than one sample at leadtime $t+1$. The inference procedure is illustrated in Figure \ref{fig:inference}.
+
+Training is performed such as to train the model to predict on a single leadtime (+5min), and after this performing further training on 6 leadtimes (+30min) until model convergence. This is done in an attempt to speed up model convergence compared to training the model on many leadtimes right from the start. At each training step, one MC sample is drawn from the network and gradients are calculated from its ELBO loss. A diagram illustrating the training process is shown in Figure \ref{fig:training}.
+
+\subsection{Additional Hyper-parameters for NN}
+\label{section:hyper}
+ Both for RainNet and BCNN, the Adam optimizer is used with an initial learning rate of 1e-04. For RainNet, other hyper-parameters were left to their \texttt{torch.optim.Adam} default values, while for BCNN, the momentum parameter $\beta_1$ was increased to $0.95$ to better accommodate the increased stochasticity of SVI compared to non-Bayesian NN \cite{noauthor_svi_nodate}. 
+ 
+ 
+ \begin{itemize}
+ 	\item Early stopping
+	\item LR scheduler (Reduce LR on plateau)
+ \end{itemize}
+
 
 \section{Verification Methods}
+
 
 \subsection{Evaluation of nowcast predictive uncertainty}
 
 
 In order to visually assess ensemble nowcasts, ensemble mean and standard deviations of nowcasts were plotted and compared to radar observations. In addition, rainrate exceedance probability estimations for the ensemble were plotted for thresholds of 0.5 and 5.0 mm/h. Leadtimes chosen for these visualizations included 5, 15, 30, and 60 minutes or alternatively 5, 60, 120, and 180 minutes for studying longer less skillful prediction time-scales.
 
-Uncertainties present in the data are coming from a diverse set of sources, including both aleatoric and epistemic uncertainties. In order to accurately represent the data distribution resulting from this compound uncertainty, a large ensemble size is needed. Hence, the ensemble size was chosen to be 24 for preliminary small scale models and 48 for full-scale models. Verification might be even more reliable with bigger ensembles, but this would be at the expense of too much storage space needed for predictions, which would be very inconvenient. Chosen sizes were deemed to be a good compromise regarding this.
+Uncertainties present in the data are coming from a diverse set of sources, including both aleatoric and epistemic uncertainties. In order to accurately represent the data distribution resulting from this compound uncertainty, a large ensemble size is needed. Hence, the ensemble size was chosen to be 24 for preliminary small scale, and 48 for full-scale models. Verification might be even more reliable with bigger ensembles, but this would be at the expense of too much storage space needed for predictions, which would be very inconvenient. Chosen sizes were deemed to be a good compromise regarding this.
 
 
 
 \subsection{Baseline Deterministic Models}
+
+In order to verify the skill of BCNN, multiple deterministic models were used to produce nowcasts against which those produced by BCNN are compared. First and foremost, the ensemble averages of BCNN are compared against those of RainNet trained with 6 leadtimes, and both LogCosh and MS-SSIM loss, with the configuration outlined in sections \ref{section:rainnet} and \ref{section:hyper}. Although loss functions used for training the network are not comparable, it still is interesting to compare the skill between the classical predictions and Bayesian version ensemble means, as underlying functional architectures are the same.
+
+In addition, predictions were calculated with a panoply of non-deep-learning models introduced in section \ref{section:classic_nowcast}, including Lagrangian persistence (Extrapolation nowcast), S-PROG, ANVIL, and LINDA-D.
+
 \begin{itemize}
 	\item Lagrangian persistence (advection-extrapolation)
 	\item S-PROG
@@ -78,6 +148,8 @@ Uncertainties present in the data are coming from a diverse set of sources, incl
 	\item LINDA-D
 	\item RainNet (c.f. above)
 \end{itemize}
+
+
 
 \subsection{Baseline Probabilistic Models}
 
@@ -106,7 +178,16 @@ only cares about the magnitude of the errors in predictions by taking the absolu
 
 \fixme{small picture showing contingency table to help vizualization}
 
-This limited utility of continuous scores serves as a motivation to introduce categorical scores. These are based on the principle of comparing the presence or absence of a rain event in observations and predictions as defined by having a pixel exceeding a threshold value $R_{\text{THR}}$. The categorical scores are defined by dividing events into four categories, that are true positives (TP), i.e rain events that were correctly predicted, true negatives (TN), i.e. lack of rain event that was correctly predicted, false negatives (FN), i.e. rain that wasn't successfully predicted, and false positives (FP), i.e rain that was erroneously predicted. Scores derived from those quantities that were used are probability of detection (POD) defined as
+\begin{wrapfigure}{r}{0.5\textwidth}
+	\label{fig:contingency}
+	\begin{center}
+		\missingfigure{Contingency table illustrating FP,FN,TN,TP}
+	\end{center}
+	\caption{Categories used, illustrated using a contingency table.}
+\end{wrapfigure}
+
+
+This limited utility of continuous scores serves as a motivation to introduce categorical scores. These are based on the principle of comparing the presence or absence of a rain event in observations and predictions as defined by having a pixel exceeding a threshold value $R_{\text{THR}}$. The categorical scores are defined by dividing events into four categories, that are true positives (TP), i.e rain events that were correctly predicted, true negatives (TN), i.e. lack of rain event that was correctly predicted, false negatives (FN), i.e. rain that wasn't successfully predicted, and false positives (FP), i.e rain that was erroneously predicted. These categories and their relations are illustrated in Figure \ref{fig:contingency}. Scores derived from those quantities that were used are probability of detection (POD) defined as
 
 \begin{equation}
 	\text{POD} = \frac{\text{TP}}{\text{TP}+\text{FN}}
@@ -185,6 +266,11 @@ ROC curves are conditioned on observation of an event, while reliability diagram
 \section{Software and resources}
 \fixme{Some diagram for visualizing grand scheme of workflow}
 
+\begin{figure}
+	\label{fig:workflow}
+	\missingfigure[figheight=8cm]{Vizualizating the overall workflow with model training, predictions and baselines, metrics, together with used software}
+	\caption{Overall workflow used for this work, tied with used libraries for different components.}
+\end{figure}
 
 The deep learning models were all implemented using the PyTorch framework and the PyTorch Lightning wrapper \cite{Falcon_PyTorch_Lightning_2019}. These libraries were chosen because of the combined ease of prototyping brought by PyTorch Lightning, and the maturity and flexibility of the parent framework PyTorch. RainNet was ported to PyTorch following the original Tensorflow implementation by Ayzel et al. \cite{Ayzel2020RainNet}. 
 
