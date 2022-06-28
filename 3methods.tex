@@ -26,6 +26,7 @@ Radar composites are stored as gzip-compressed PGM composite files holding uint8
 From radar reflectivities, rainrate estimates were calculated using Eq. \ref{eq:z-r} solved for $R$, with empirically determined parameters $A=223$ and $b=1.53$, and $z = 10^{Z / 10}$, giving us a relation of
 
 \begin{equation}
+\label{eq:dbz_to_r}
 R = (10^{Z / 10} / 223)^{1/1.53}
 \end{equation}
 
@@ -59,12 +60,14 @@ The rainrates were scaled using a logarithmic transformation $x_{\log} = \ln(x +
 
 This diverging behavior is alleviated by calculating the loss function for nowcasts done over several leadtimes, making the resulting learned network more temporally stable. Hence for training, the predictions are calculated for 6 leadtimes (30 minutes ahead) and the loss is calculated such that each prediction leadtime is weighted equally. Using multiple leadtimes is also implemented for the LogCosh loss function. MS-SSIM was calculated using a data range parameter of 1.0 and equal scale weights of $[0.2, 0.2, 0.2, 0.2, 0.2]$ ordered from smallest to biggest, as opposite to the scaling optimized for visual perception introduced by Wang et al. \cite{wang_multiscale_2003} in the context of using MS-SSIM as a visual quality assessment tool. 
 
+The reason for adopting RainNet as the functional architecture of the Bayesian Neural Network is that compared to for example ConvLSTM based models, it has faster inference without losing much in skill. This is important when building upon a model, especially when having limited resources, as added components make the training and inference slower. 
+
 
 \subsection{BCNN: a Bayesian extension to RainNet}
 
 \fixme{BCNN is a working name, find potentially better name}
 
-BCNN is the Bayesian extension of the RainNet made for this work. In the network, posterior probability distributions of weights and biases are modeled as diagonal Gaussian distributions and optimization is carried out using variants of the Bayes-by-Backprop algorithm described by Blundell et al. (2015) \cite{blundell_weight_2015}, minimizing the ELBO loss function as described in section \ref{section:vi}. Posteriors for all parameters are initialized identically to a mean $\mu$ of 0 and a variance $\sigma$ of 1e-4. The Local Reparametrization Trick (LRT) \cite{kingma_variational_2015} and Flipout \cite{wen_flipout_2018} are both implemented and attempted for reducing gradient variance. 
+BCNN is the Bayesian extension of the RainNet made for this work. In the network, posterior probability distributions of weights and biases are modeled as diagonal Gaussian distributions and optimization is carried out using variants of the Bayes-by-Backprop algorithm described by Blundell et al. (2015) \cite{blundell_weight_2015}, minimizing the ELBO loss function as described in section \ref{section:vi}. Posteriors for all parameters are initialized identically to a mean $\mu$ of 0 and a variance $\sigma$ of 1e-4. Parametrizing the posteriors as Gaussian distributions doubles the number of learnable parameters to 62.8M. The Local Reparametrization Trick (LRT) \cite{kingma_variational_2015} and Flipout \cite{wen_flipout_2018} are both used in an attempt to reduce gradient variance and speed-up optimization. 
 
 As for the prior distribution, two variants are implemented. One being a diagonal Gaussian prior $P(\pmb{w}) \sim \mathcal{N}(0,0.1)$ and the second a Gaussian scale mixture prior as defined in Eq. \ref{eq:gsm}, with $\alpha = 0.5$ and $\sigma_1, \sigma_2 = 0.3, 0.03$. The scale-mixture prior might enable faster initialization and more accurate asymptotic behavior, but the Gaussian prior has more convenient mathematical properties, as it enables calculating KL-divergences in closed form when combined with a Gaussian posterior as in here, using the analytical expression
 
@@ -90,7 +93,7 @@ In BCNN, the radar images were scaled between 0 and 1 using the same procedure a
 
 where $i = 1 \dots N$ indexes the number of pixels in the images, and $\sigma$ here refers to the observational noise parameter. In homoscedastic gaussian likelihood, aleatoric uncertainty, characterized by $\sigma$ is assumed to be the same for all the data. This parameter can be learned or left constant. The latter is done in the present work, and a value of 0.02 is chosen as a guess, aiming to represent the uncertainty inherent to radar images. 
 
-Multiple procedures for weighting the complexity cost against the likelihood cost are implemented. In addition to the equal weighting scheme from Graves et al. \cite{graves_practical_2011} and the batch index dependent scheme from Blundell et al. \cite{blundell_weight_2015}, a scheme reducing the weight of the complexity cost each epoch, defined as $\pi_j = 2^{-j}$, where $j=0,1,\dots$ is the current epoch, is implemented to provide better potential fitting ability, as the equal weight scheme sometimes provides excessive regularization and the second scheme has problems with converging when using smaller batch sizes as in this work.
+Multiple procedures for weighting the complexity cost against the likelihood cost are implemented. In addition to the equal weighting scheme from Graves et al. \cite{graves_practical_2011} and the batch index dependent scheme from Blundell et al. \cite{blundell_weight_2015}, a scheme reducing the weight of the complexity cost each epoch, defined as $\pi_j = 2^{-j}$, where $j=0,1,\dots$ is the current epoch, is implemented to provide better potential convergence, as the equal weight scheme sometimes provides excessive regularization and the second scheme has problems with converging when using smaller batch sizes as in this work.
 
 
 \begin{figure}[ht]
@@ -136,27 +139,21 @@ Uncertainties present in the data are coming from a diverse set of sources, incl
 
 
 \subsection{Baseline Deterministic Models}
+\label{section:det_models}
 
 In order to verify the skill of BCNN, multiple deterministic models were used to produce nowcasts against which those produced by BCNN are compared. First and foremost, the ensemble averages of BCNN are compared against those of RainNet trained with 6 leadtimes, and both LogCosh and MS-SSIM loss, with the configuration outlined in sections \ref{section:rainnet} and \ref{section:hyper}. Although loss functions used for training the network are not comparable, it still is interesting to compare the skill between the classical predictions and Bayesian version ensemble means, as underlying functional architectures are the same.
 
-In addition, predictions were calculated with a panoply of non-deep-learning models introduced in section \ref{section:classic_nowcast}, including Lagrangian persistence (Extrapolation nowcast), S-PROG, ANVIL, and LINDA-D.
+In addition, predictions were calculated with a panoply of non-deep-learning models introduced in section \ref{section:classic_nowcast} having different levels of refinement, including Lagrangian persistence (Extrapolation nowcast), S-PROG, ANVIL, and LINDA-D.
 
-\begin{itemize}
-	\item Lagrangian persistence (advection-extrapolation)
-	\item S-PROG
-	\item ANVIL
-	\item LINDA-D
-	\item RainNet (c.f. above)
-\end{itemize}
-
+Concerning baseline models other than RainNet, before all predictions, the bounding box is applied, input data is converted to rainrate using Eq. \ref{eq:dbz_to_r} and thresholded at 0.1 mm/h and possible NaN values are set to zero. After predictions are made, these are thresholded at 0.1 mm/h and converted to back to reflectivities by first using Eq. \ref{eq:z-r} with parameters $A$ and $b$ stated in section \ref{section:data} and then converting Z to dBZ.
 
 
 \subsection{Baseline Probabilistic Models}
 
-\begin{itemize}
-	\item STEPS
-	\item LINDA-P
-\end{itemize}
+Probabilistic skill verification was performed against STEPS and LINDA-P. The former was chosen as it is a well-established and broadly used model offering good performance for a relatively low inference cost of 1-2 minutes to produce a 3 hours nowcast of 24-48 ensemble members on a modern CPU for a domain of 512x512 pixels \cite{pulkkinen_pysteps_2019}. It thus makes sense to want BCNN to perform at least on the same level as STEPS, considering that the time required for inference with it might not be much lower than that. LINDA-P, also known as the probabilistic variant of LINDA, is computationally more expensive but represents the state-of-the-art in terms of probabilistically predicting localized high-intensity rainfall. Consequently, LINDA-P makes for an interesting benchmark for those cases. 
+
+The same preprocessing and postprocessing pipelines as for deterministic cases (section \ref{section:det_models}) are used with baseline probabilistic models. Also, the same optical flow and extrapolation parameters are used, and again, Pysteps 1.6.1 default values for methods are used unless stated otherwise. 
+
 
 \subsection{Deterministic Prediction skill evaluation metrics}
 
@@ -176,7 +173,6 @@ where we sum over the $i=1,\dots,N$ pixels in the radar image, $y$ denotes groun
 
 only cares about the magnitude of the errors in predictions by taking the absolute value, so it gives an idea of the prediction skill over the images \textit{on average}. Nevertheless, this is not enough to accurately assess the skill of a nowcast method, because not all pixels are equally important. Additionally, A poor forecast may have good MAE and vice versa. To illustrate this, a forecast failing to predict localized intense rainfall, but otherwise accurately capturing light rainfall over large areas will usually have a small MAE but will have low operational usefulness.
 
-\fixme{small picture showing contingency table to help vizualization}
 
 \begin{wrapfigure}{r}{0.5\textwidth}
 	\label{fig:contingency}
