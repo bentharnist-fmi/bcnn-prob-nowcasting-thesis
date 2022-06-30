@@ -1,0 +1,74 @@
+%% Creator: Inkscape inkscape 0.92.5, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'training_diagram_svg-tex.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \newcommand*\fsize{\dimexpr\f@size pt\relax}%
+  \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{246.48926942bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.39482072)%
+    \lineheight{1}%
+    \setlength\tabcolsep{0pt}%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{training_diagram_svg-tex.pdf}}%
+    \put(0.29028471,0.32675107){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{3}\smash{\begin{tabular}[t]{l}FMI Radar Composites\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{training_diagram_svg-tex.pdf}}%
+    \put(0.04309771,0.06799293){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{3}\smash{\begin{tabular}[t]{l}Start\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{training_diagram_svg-tex.pdf}}%
+    \put(0.40670655,0.02412326){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{3}\smash{\begin{tabular}[t]{l}Input Images\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{training_diagram_svg-tex.pdf}}%
+    \put(0.60934799,0.10184389){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{3}\smash{\begin{tabular}[t]{l}Preprocessing\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{training_diagram_svg-tex.pdf}}%
+    \put(0.9094134,0.12962019){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.41732287}\smash{\begin{tabular}[t]{c}BCNN\\Inference\\Loop \end{tabular}}}}%
+    \put(0.64738207,0.32950528){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{3}\smash{\begin{tabular}[t]{l}                                 \end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{training_diagram_svg-tex.pdf}}%
+    \put(0.12066774,0.28768643){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\\2020-06-30 00:05:00\end{tabular}}}}%
+    \put(0.1208606,0.2775685){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\\2020-06-30 00:10:00\end{tabular}}}}%
+    \put(0.12047638,0.26796343){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\\2020-06-30 00:15:00\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{training_diagram_svg-tex.pdf}}%
+    \put(0.16342695,0.29191266){\color[rgb]{0,0,0}\makebox(0,0)[t]{\smash{\begin{tabular}[t]{c}Training timestamps\end{tabular}}}}%
+  \end{picture}%
+\endgroup%

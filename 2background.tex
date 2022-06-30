@@ -46,11 +46,11 @@ where $z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirical
 	\item 
 \end{itemize}
 
-Multi-Scale Structural Similarity Index (MS-SSIM), originally an image quality assessment metric \cite{wang_multiscale_2003}, has recently started to be used as a loss function in deep learning, particularly in image reconstruction tasks. One of its main assets is that it or its single-scale counterpart (SSIM )has been shown to reduce blurring in image reconstruction \cite{zhao_loss_2017} making it a good candidate loss function for nowcasting with neural networks, as it has been seen that these models suffer from excessive blurring, effectively minimizing standard loss functions such as Mean Squared Error (MSE), but failing to predict useful patterns such as heavy localized rainfall. Indeed in recent years, there has been some cases where MS-SSIM or SSIM started have started to be used in 
+Multi-Scale Structural Similarity Index (MS-SSIM), originally an image quality assessment metric \cite{wang_multiscale_2003}, has recently started to be used as a loss function in deep learning, particularly in image reconstruction tasks. One of its main assets is that its single-scale counterpart (SSIM) has been shown to reduce blurring in image reconstruction \cite{zhao_loss_2017} making it a good candidate loss function for nowcasting with neural networks, as it has been seen that these models suffer from excessive blurring, effectively minimizing standard loss functions such as Mean Squared Error (MSE), but failing to predict useful patterns such as heavy localized rainfall. Indeed in recent years, there has been some cases where MS-SSIM or SSIM started have started to be used in 
 
-\section{Bayesian deep learning}
+\section{Bayesian Deep Learning}
 
-\subsection{Learning probability distributions}
+\subsection{Learning Probability Distributions}
 \begin{itemize}
 	\item first old studies
 	\item link overfitting to the bias-variance trade-off

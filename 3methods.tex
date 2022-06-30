@@ -48,8 +48,10 @@ For the implementation of a Bayesian Convolutional Network, we use as our base f
 
 \begin{figure}[h]
 	\label{fig:rainnet}
-	\missingfigure[figwidth=12cm, figheight=8cm]{RainNet architecture diagram with vector graphics}
-	\caption{The functional CNN architecture used for this work, adapted from RainNet.}
+	%\missingfigure[figwidth=12cm, figheight=8cm]{RainNet architecture diagram with vector graphics}
+	\centering
+	\includegraphics[scale=1]{images/rainnet_arch/rainnet_arch}
+	\caption{The functional CNN architecture used for this work, Identical to that of RainNet from Ayzel et al. \cite{ayzel_rainnet_nodate}. \texttt{concat} refers to the concatenation of feature maps along the channel dimension.}
 \end{figure}
 
 The convolutional filters have a filter size of 3, with padding designed to preserve image shape, and a stride of one. Finally, the last convolutional layer in the network has a filter size of 1 with no padding, and it is followed by a linear activation output layer, i.e. no (nonlinear) activation function. The network does not contain any fully-connected layers, and in total consists of 31.4M parameters. RainNet works by feeding in 4 consecutive radar images, with the physically speaking temporal dimension represented in the channel dimension of the tensor. As the output of the network, we get one output radar image, representing the next predicted frame. In order to make predictions at further leadtimes, the predictions are fed back to the inputs one-by-one in an iterative process. 
@@ -98,15 +100,16 @@ Multiple procedures for weighting the complexity cost against the likelihood cos
 
 \begin{figure}[ht]
 	\begin{center}
-		\subfigure[Training procedure for the BCNN.]{
+		\subfigure[Training procedure for the BCNN illustrated. \textbf{Rough first version: cleaning up later with radar imgs/preds over black boxes, alignment, sizes, fonts same everywhere after getting feedback on overall structure}]{
 			\label{fig:training}
-			\missingfigure{Training diagram}
+			%\missingfigure[figwidth=14cm, figheight=5cm]{Training diagram}
+			\includegraphics[scale=1]{images/training_diagram/training_diagram.pdf}
 		}
-		\subfigure[Inference procedure for generating ensemble nowcasts with the BCNN.]{
+		\subfigure[Inference procedure for generating ensemble nowcasts with the BCNN.\textbf{Same comments as above...}]{
 			\label{fig:inference}
-			\missingfigure{Inference diagram}
+			\includegraphics[scale=1]{images/inference_diagram/inference_diagram.pdf}
 		}
-		\caption{Training and inference processes}
+		\caption{Training and inference procedures}
 		\label{fig:training_inference_diagram}
 	\end{center}
 \end{figure}
@@ -174,16 +177,27 @@ where we sum over the $i=1,\dots,N$ pixels in the radar image, $y$ denotes groun
 only cares about the magnitude of the errors in predictions by taking the absolute value, so it gives an idea of the prediction skill over the images \textit{on average}. Nevertheless, this is not enough to accurately assess the skill of a nowcast method, because not all pixels are equally important. Additionally, A poor forecast may have good MAE and vice versa. To illustrate this, a forecast failing to predict localized intense rainfall, but otherwise accurately capturing light rainfall over large areas will usually have a small MAE but will have low operational usefulness.
 
 
-\begin{wrapfigure}{r}{0.5\textwidth}
-	\label{fig:contingency}
-	\begin{center}
-		\missingfigure{Contingency table illustrating FP,FN,TN,TP}
-	\end{center}
-	\caption{Categories used, illustrated using a contingency table.}
-\end{wrapfigure}
+\begin{wraptable}{r}{0.6\textwidth}
+	\centering
+		\begin{tabular}{@{}|c|c|c|@{}}
+			
+			\toprule
+			\textit{\begin{tabular}[c]{@{}c@{}}Precipitation\\ is ...\end{tabular}} &
+			\multicolumn{1}{l|}{\textbf{Observed}} &
+			\textbf{\begin{tabular}[c]{@{}c@{}}Not\\ observed\end{tabular}} \\ \midrule
+			\textbf{Predicted} &
+			\cellcolor[HTML]{D9FFD9}\begin{tabular}[c]{@{}c@{}}TP\\ (Hits)\end{tabular} &
+			\cellcolor[HTML]{FFCAB1}\begin{tabular}[c]{@{}c@{}}FP\\ (False Alarms)\end{tabular} \\ \midrule
+			\textbf{\begin{tabular}[c]{@{}c@{}}Not\\ predicted\end{tabular}} &
+			\cellcolor[HTML]{FFCAB1}\begin{tabular}[c]{@{}c@{}}FN\\ (Misses)\end{tabular} &
+			TN \\ \bottomrule
+		\end{tabular}
+	\caption{Contingency table of categories used. Alternative nomenclature is shown in parentheses.}
+	\label{table:contingency}
+\end{wraptable}
 
 
-This limited utility of continuous scores serves as a motivation to introduce categorical scores. These are based on the principle of comparing the presence or absence of a rain event in observations and predictions as defined by having a pixel exceeding a threshold value $R_{\text{THR}}$. The categorical scores are defined by dividing events into four categories, that are true positives (TP), i.e rain events that were correctly predicted, true negatives (TN), i.e. lack of rain event that was correctly predicted, false negatives (FN), i.e. rain that wasn't successfully predicted, and false positives (FP), i.e rain that was erroneously predicted. These categories and their relations are illustrated in Figure \ref{fig:contingency}. Scores derived from those quantities that were used are probability of detection (POD) defined as
+This limited utility of continuous scores serves as a motivation to introduce categorical scores. These are based on the principle of comparing the presence or absence of a rain event in observations and predictions as defined by having a pixel exceeding a threshold value $R_{\text{THR}}$. The categorical scores are defined by dividing events into four categories, that are true positives (TP), i.e rain events that were correctly predicted, true negatives (TN), i.e. lack of rain event that was correctly predicted, false negatives (FN), i.e. rain that wasn't successfully predicted, and false positives (FP), i.e rain that was erroneously predicted. These categories and their relations are illustrated in Table \ref{table:contingency}. Scores derived from those quantities that were used are probability of detection (POD) defined as
 
 \begin{equation}
 	\text{POD} = \frac{\text{TP}}{\text{TP}+\text{FN}}
@@ -260,11 +274,12 @@ ROC curves are conditioned on observation of an event, while reliability diagram
  Intermediate results are saved such that predictions are saved in HDF5 archives, in a format where each predicted radar image is a separate dataset in deterministic models, and each ensemble of predicted radar images for a certain leadtime is its separate dataset in ensemble nowcast models. In this storage procedure, predicted float reflectivity values are first compressed into UINT8 with a scale-offset scheme, then thresholded to 0.1 mm/h to facilitate further lossless compression which is finally carried out using GZIP. Trying to reduce the storage space needed is essential because predictions take a very large amount of space on disk. This is a consequence of combining a big number of timestamps, ensemble members and leadtimes for multiple models. Raw metrics do not suffer from the same problem and are saved to disk in a binary Numpy format.  
  
 \section{Software and resources}
-\fixme{Some diagram for visualizing grand scheme of workflow}
 
 \begin{figure}
+	\centering
 	\label{fig:workflow}
-	\missingfigure[figheight=8cm]{Vizualizating the overall workflow with model training, predictions and baselines, metrics, together with used software}
+	%\missingfigure[figheight=8cm, figwidth=12cm]{Vizualizating the overall workflow with model training, predictions and baselines, metrics, together with used software}
+	\includegraphics[width=\textwidth]{images/workflow/workflow}
 	\caption{Overall workflow used for this work, tied with used libraries for different components.}
 \end{figure}
 
