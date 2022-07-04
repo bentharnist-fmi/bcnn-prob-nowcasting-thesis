@@ -122,13 +122,7 @@ Training is performed such as to train the model to predict on a single leadtime
 
 \subsection{Additional Hyper-parameters for NN}
 \label{section:hyper}
- Both for RainNet and BCNN, the Adam optimizer is used with an initial learning rate of 1e-04. For RainNet, other hyper-parameters were left to their \texttt{torch.optim.Adam} default values, while for BCNN, the momentum parameter $\beta_1$ was increased to $0.95$ to better accommodate the increased stochasticity of SVI compared to non-Bayesian NN \cite{noauthor_svi_nodate}. 
- 
- 
- \begin{itemize}
- 	\item Early stopping
-	\item LR scheduler (Reduce LR on plateau)
- \end{itemize}
+ Both for RainNet and BCNN, the Adam optimizer is used with an initial learning rate of 1e-04, without any learning rate scheduler. For RainNet, other hyper-parameters were left to their \texttt{torch.optim.Adam} default values, while for BCNN, the momentum parameter $\beta_1$ was increased to $0.95$ to better accommodate the increased stochasticity of SVI compared to non-Bayesian NN \cite{noauthor_svi_nodate}. Early stopping was set with condition that the validation loss does not decrease for 3 epochs for both models. For BCNN, only the likelihood part of the loss was taken into account in the early stopping criterion. 
 
 
 \section{Verification Methods}
@@ -148,7 +142,7 @@ Uncertainties present in the data are coming from a diverse set of sources, incl
 
 In order to verify the skill of BCNN, multiple deterministic models were used to produce nowcasts against which those produced by BCNN are compared. First and foremost, the ensemble averages of BCNN are compared against those of RainNet trained with 6 leadtimes, and both LogCosh and MS-SSIM loss, with the configuration outlined in sections \ref{section:rainnet} and \ref{section:hyper}. Although loss functions used for training the network are not comparable, it still is interesting to compare the skill between the classical predictions and Bayesian version ensemble means, as underlying functional architectures are the same.
 
-In addition, predictions were calculated with a panoply of non-deep-learning models introduced in section \ref{section:classic_nowcast} having different levels of refinement, including Lagrangian persistence (Extrapolation nowcast), S-PROG, ANVIL, and LINDA-D.
+In addition, predictions were calculated with a panoply of non-deep-learning models introduced in section \ref{section:classic_nowcast} having different levels of refinement, including Lagrangian persistence (Extrapolation nowcast), S-PROG, and LINDA-D.
 
 Concerning baseline models other than RainNet, before all predictions, the bounding box is applied, input data is converted to rainrate using Eq. \ref{eq:dbz_to_r} and thresholded at 0.1 mm/h and possible NaN values are set to zero. After predictions are made, these are thresholded at 0.1 mm/h and converted to back to reflectivities by first using Eq. \ref{eq:z-r} with parameters $A$ and $b$ stated in section \ref{section:data} and then converting Z to dBZ.
 

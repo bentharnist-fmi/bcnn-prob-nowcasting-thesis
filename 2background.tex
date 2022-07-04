@@ -60,23 +60,64 @@ The reason for this is that extrapolation is based on the assumption of Lagrangi
 	\item Explain lagrangian frame of view vs eulerian
 	\item Basic principles of advection equations. 
 	\item Chronological advancing, with +/- of each method
+	\item Extrapolation: when introduced,
+	\item TREC, COTREC, etc
+	\item Burgers' eq, NS improvements 
+	\item S-PROG and predictability scale dependence by Germann
+	\item ANVIL ...
+	\item Cell based : TITAN and further improvements
 \end{itemize}
 
 \subsection{Classical probabilistic methods}
 \begin{itemize}
-	\item approach types, ensemble etc
+	\item Ensemble based, quantile based (?)
+	\item STEPS, linked to S-PROG
+	\item LINDA 
 \end{itemize}
 
-\subsection{Machine learning approaches}
+
+
+\section{Deep Learning for Nowcasting}
+
+\subsection{Artificial Neural Networks}
+
+Artificial Neural Networks, abbreviated Neural Network or NN in a machine learning context, are computational systems inspired by biological neural networks, such as those present in the human brain. In this work, the terms Deep Learning will be used as meaning "regarding neural networks and their usage". Neural networks serve to accomplish many tasks, usually of the domain of artificial intelligence, such as regression, classification, or agent decision making. NN consist of discrete units called neurons linked to each others, usually arranged in functional units known as layers, in which case connections are formed between layers. Input data is fed into the NN to an input layer, transforming the input through learnable parameters, and this transformed signal is propagated through other layers further transforming the signal. The organization of layers and the way they are connected is known as the \textit{network architecture}. Finally, signals converge to an output layer giving the product of the network, such as a prediction or class of input data. Between neurons and layers there are non-linear \textit{activation functions}, which are in essence non-linear transformation on data, which are the basic mechanism that enables neural networks to learn complex nonlinear patterns.
+
+In Neural Networks, parameters are usually not tuned by hand due to the sheer complexity of the task. Instead, finding optimal parameters for performing the task is framed as an optimization problem. This is accomplished using standard unconstrained optimization tools and the Backpropagation algorithm, allowing learning of the parameters, despite of the problem being very high-dimensional and non-convex. This algorithm is based on producing an output by passing input data through the network, and then calculating a metric of how well the network succeeded at the task, known as a \textit{loss function} or cost function. The gradient of the output related to network parameters are then calculated backwards starting from the loss function, flowing through the network using the chain rule of derivation. These gradients are then used to update model parameters using simple gradient descent or its variations. 
+
+Usually, the input data is divided input small subsets called \textit{batches} or mini-batches, and the gradient updates are calculated by going iteratively through them in a process called \textit{training}. Gradient descent over these mini-batches is called Stochastic Gradient Descent. Going through all of the training data one time is called an \textit{epoch}, and training is usually continued for many epochs. In deep learning, available data is usually split into training, validation, and test data. Validation data is used for the validation process, in which performance of the NN is assessed on data unused for training. This information on performance can then be used to tune \textit{hyperparameters}, that is parameters that are constant and set before training, or perform other types decision-making related to the training process, such as early stopping of the training, if performance is likely not to improve anymore. The reason why training data is not used here is that the network usually performs better on data that it was trained on compared to other data. Lastly, test data is used for independent assessment of the network performance. This is needed because even though validation data is not used for training, the network is still biased to perform better on it if decision that improve performance were made based on it. Validation data can thus not be trusted on as an independent evaluator of network performance. 
+
+There are multiple types of Neural Network architectures that are each good at different types of task. Main types with some relevance to nowcasting and Bayesian Deep Learning are feed-forward neural networks, Recurrent Neural Networks (RNN), Convolutional Neural Networks (CNN) and Generative Adversarial Networks (GAN). Feed-forward neural networks are the earliest type of NN, with linear transformations of data in layers of neurons, where neurons of successive layers are all connected to each others.
+
+ RNN are a modification of feed-forward neural networks with recurrent connections along units forming a network along a temporal sequence, making them widely used for the forecasting of time-series data and natural-language processing. Important improvements over original RNN are Long-Short Term Memory (LSTM) networks, with units having internal states allowing learning longer-range temporal dependencies, and Gated Recurrent Unit (GRU) modifying LSTM units to make them more lightweight. 
+
+CNN have layers that are convolutional filters applied over the input data. CNN are great for use in computer vision and other image related tasks, as they take advantage of the fact that learning short-range dependencies is enough to perform well in many of those tasks, thus reducing the hypothesis space of learnable representations in an informed way. One CNN architecture of particular interest in the context of this work is U-Net, that has shown excellent results in e.g. semantic segmentation tasks, that are important for biomedical imaging and autonomous vehicle applications. U-Net follows a simple encoder-decoder architecture. The next section will describe current applications of artificial neural networks to precipitation nowcasting.
+
+
+
+\subsection{Deep Learning approaches to Nowcasting}
 \begin{itemize}
-	\item 
+	%\item convLSTM, convGRU
+	%\item RainNet
+	%\item polarimetric data combined 
+	%\item using MS-SSIM shi et al.
+	\item GAN with Deepmind 
+	
 \end{itemize}
 
-Multi-Scale Structural Similarity Index (MS-SSIM), originally an image quality assessment metric \cite{wang_multiscale_2003}, has recently started to be used as a loss function in deep learning, particularly in image reconstruction tasks. One of its main assets is that its single-scale counterpart (SSIM) has been shown to reduce blurring in image reconstruction \cite{zhao_loss_2017} making it a good candidate loss function for nowcasting with neural networks, as it has been seen that these models suffer from excessive blurring, effectively minimizing standard loss functions such as Mean Squared Error (MSE), but failing to predict useful patterns such as heavy localized rainfall. Indeed in recent years, there has been some cases where MS-SSIM or SSIM started have started to be used in 
+There exists now many methods for producing deterministic nowcasts with machine learning, but most suffer the same problem of producing overly blurry nowcasts only after a few timesteps. There has been marginal improvement with regards to this problem over the years, but it remains one important challenge. For probabilistic nowcasts on the other hand, it will be seen that this is not such a big problems probabilistic nowcasts have different needs. 
+ 
+The first dedicated Deep Learning model for precipitation nowcasting is ConvLSTM by Shi et al. \cite{shi_convolutional_2015}, published in 2015, building upon the work of Oh et al. \cite{oh_action-conditional_2015}. ConvLSTM is a neural network combining the image feature encoding capacities of CNN and  temporal prediction capacities of LSTM into a single network fusing the two. ConvLSTM was shown to outperform an optical flow based model at predicting precipitation exceeding a low rain rate of 0.5 mm/h. 
+A further model inspired by ConvLSTM called TrajGRU is developed by Shi et al. \cite{shi_deep_2017} in 2017 by replacing the LSTM component with GRU and making recurrent connections dynamically location-variant. These connections improve the predictive skill over over invariant ones (ConvGRU), but the model was not tested against ConvLSTM. 
+
+Another class of models that have gained traction lately for nowcasting are simple U-Net based CNN, that adopts an image-to-image translation perspective on the problem. These networks are fed a sequence of radar images and output either one or several future frames. One example of this approach is  that of Agrawal et al. \cite{agrawal_machine_2019}. In case only one frame is outputted, predictions for several leadtimes in the future may be done by iteratively feeding back predictions into the network as input, as is done with Ayzel et al.'s RainNet \cite{ayzel_rainnet_nodate}. These CNN models also have the advantage of being computationally less expensive when compared to ConvLSTM variants. 
+
+Recently, Pan et al. improved the nowcasting of convective evolution by adding  polarimetric variables (ZDR and KDP) in addition to reflectivity scans as inputs to a U-Net based model \cite{pan_improving_2021}. These polarimetric variables are derived from double polarization weather radars and their values are strongly associated with life-cycles of convective cells. This work showcases the importance of multichannel data and not only relying on reflectivity if one wants to accurately model nonlinear evolution of precipitation.
+
+Above models suffers badly the the problem of blurring stated above, as do all current models based on discriminative neural networks, which are networks mapping one input to one output. Prediction blurring is in part related to loss functions used, as losses like $\ell_2$ (Mean Squared Error (MSE)) and $\ell_1$ tend to act that way when minimized with some uncertainty present. This excessive blurring also hinders the prediction of useful patterns such as heavy localized rainfall.
+Multi-Scale Structural Similarity Index (MS-SSIM), originally an image quality assessment metric \cite{wang_multiscale_2003}, has recently started to be used as a loss function in deep learning, particularly in image reconstruction tasks. One of its main assets is that its single-scale counterpart (SSIM) has been shown to reduce blurring in image reconstruction \cite{zhao_loss_2017} making it a good candidate loss function for nowcasting with neural networks.  Indeed in recent years, there has been some cases where MS-SSIM or SSIM started have started to be used in Deep learning based nowcasting models, such as the one of Yin et al. (2021) \cite{yin_application_2021}. Here both SSIM and MS-SSIM produced results surpassing MSE, with MS-SSIM giving the best results of the two. Most importantly, these loss functions seemed to better preserve high rain rates, which tended to vanish with traditional losses at higher leadtimes. 
 
 \section{Bayesian Deep Learning}
-
-\subsection{Neural Networks}
 
 \subsection{Learning Probability Distributions}
 \begin{itemize}
@@ -93,6 +134,8 @@ Multi-Scale Structural Similarity Index (MS-SSIM), originally an image quality a
 	In a Bayesian framework, the posterior distributions of parameters are estimated conditioned on data and a prior. Because exact Bayesian inference involves dealing with intractable integrals, it is not doable to solve them for real-world neural networks having thousands to millions of parameters. As such, two broad categories of inference methods have been developed for use in BNN. The first one is using Markov-Chain Monte-Carlo (MCMC) to sample from posterior distributions. MCMC works well for smaller-scale models, but it is limited to only thousands of parameters because of the computational expensiveness of Markov-Chain simulations. 
 	
 	The second inference method category is Variational Inference (VI). The main idea behind variational inference is to turn the problem of finding the intractable true bayesian posterior into that of finding the closest distribution from a limited distribution family (the variational posterior) with regards to the true posterior. This turns the problem of solving an integral into that of optimization, allowing the use of classical unconstrained optimization methods. 
+	
+	In the context of Bayesian Deep Learning, the underlying neural network architecture will be referred to as the functional architecture or the functional model. Other components such as the inference method, the prior,  or the posterior modeling will be commonly referred to as the stochastic model. 
 	
 	
 
@@ -194,7 +237,7 @@ Multi-Scale Structural Similarity Index (MS-SSIM), originally an image quality a
 \subsection{Predictive uncertainty estimation and decomposition}
 
 \textit{Predictive uncertainty} is defined as the total uncertainty arising in practice when making predictions with a probabilistic or ensemble based model.
-Broadly speaking, in deep learning predictive uncertainty can be divided into two main categories. These are  \textit{aleatoric uncertainty}, which originates from the input data, and \textit{epistemic uncertainty}, which originates in the inaccuracy of the model. Epistemic uncertainty can be reduced with more training, while aleatoric uncertainty can not be by definition. Furthermore, aleatoric uncertainty is classified into homoscedastic and heteroscedastic aleatoric uncertainties in the context where one tries to estimate it. The former assumes that all observation share the same underlying uncertainty, while the latter allows each observation uncertainty to differ. \cite{shridhar_comprehensive_2019}
+Broadly speaking, in deep learning predictive uncertainty can be divided into two main categories. These are  \textit{aleatoric uncertainty}, which originates from the input data, and \textit{epistemic uncertainty}, which originates in the inaccuracy of the model. Epistemic uncertainty can be reduced with more training or some other changes, while aleatoric uncertainty can not be by definition. Furthermore, aleatoric uncertainty is classified into homoscedastic and heteroscedastic aleatoric uncertainties in the context where one tries to estimate it. The former assumes that all observation share the same underlying uncertainty, while the latter allows each observation uncertainty to differ. \cite{shridhar_comprehensive_2019}
 
 Characterization of uncertainty is important because not taking it into account might lead to over-estimation or under-estimation of failure probability of a model, as explained by Der Kiureghian \cite{kiureghian_aleatory_2009}. 
 There exists techniques to decompose predictive uncertainty into aleatoric and epistemic uncertainties in deep learning. To model the epistemic component, these techniques base themselves on ensembles just like those produced by Bayesian Neural Networks, or the variability between ensemble members to be more precise. Strategies for modeling the aleatoric part differs between classification and regression tasks. In classification, heteroscedastic aleatoric uncertainty can be directly inferred from class logits without any network modification \cite{shridhar_comprehensive_2019, kwon_uncertainty_2020}. For regression on the other hand, there is a need to encode the uncertainty in the data as it is not there in the first place. By modeling the likelihood as homoscedastic Gaussian likelihood, one can learn a common homoscedastic uncertainty term for the dataset. By modeling the data as heteroscedastic Gaussian likelihood on the other hand, one can learn a different uncertainty term for each data point. This is done by separating the output of the network and its aleatoric uncertainty into two different channels towards the end of the network, and plugging these in the Gaussian likelihood accordingly \cite{kendall_what_2017}.
