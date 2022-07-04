@@ -1,47 +1,73 @@
 \chapter{Background}
 \label{chapter:background} 
-\fixme{Estimate at start: 12-15 pages}
+%\fixme{Estimate at start: 12-15 pages}
 
 \section{Precipitation Nowcasting}
 
-\subsection{Weather radars and radar products}
+\subsection*{Numerical Weather Prediction}
 
+Numerical weather prediction (NWP) is nowadays the main driver of operational weather prediction worldwide \cite{schultz_can_2021, bauer_quiet_2015}. On a very coarse level, NWP works by aggregating lots of meteorological observational data from sensors, which is used as initial state in solving atmospheric equations. This data can come from \textit{in situ}, a.k.a. close contact ground-based sensors such as rain gauges and thermometers, or upper atmosphere measurements such as those from radio sondes or aircraft sensors. Additionally and most importantly, remote-sensing sources such as satellites and weather radars provide lots of observational data, and their efficient use is one of the reasons for the improvements of NWP. Then, data assimilation is performed with that data, filling in gaps and agglomerating different sources to be consistent with each others, making the output of this process appropriate to be fed as input into a numerical simulation of the atmosphere. These simulations then consist of solving Navier-Stokes equations multiple timesteps into the future. With the model output in hand, different post-processing can be applied to answer various questions about the future state of weather, such as making precipitation forecasts.
 
-\begin{itemize}
-	\item physical functioning and paragraph on history of weather radar
-	\item reflectivity products, 2D and 3D
+NWP can be performed on multiple spatio-temporal scales. Spatiotemporally coarse models cover a wide, sometimes global area and usually make simulations with higher \textit{leadtimes}, meaning at further timesteps in the future. On the other hand, other models are specialized in providing finer spatiotemporal details with a smaller spatial extent. One example of this type of model is the High-Resolution Rapid Refresh (HRRR) model \cite{alexander2020rapid}, developed by the United States National Oceanic and Atmospheric Administration (NOAA). HRRR covers the continental united states, and has 3 kilometer spatial and 1 hour temporal resolution. Although very useful for many purposes, even such fine-detailed NWP models have not quite enough details to be most useful in very short term and very localized precipitation nowcasting as described in Chapter \ref{chapter:intro}. As such, radars and radar-based nowcasting techniques shall be now described.
+
+\subsection*{Weather Radars and Products}
+
+	%\item physical functioning and paragraph on history of weather radar
+	%\item reflectivity products, 2D and 3D
 	
-	\item from reflectivity to RR, limitations of reflectivity
-	\item double-polarization weather radars and Polarimetric products: info on microphysical processes
-\end{itemize}
+	%\item from reflectivity to RR, limitations of reflectivity
+	%\item double-polarization weather radars and Polarimetric products: info on microphysical processes
+	%\item Explain why the weather radar is best for nowcasting with WMO source
+
+Precipitation nowcasting is largely based on the data collected from weather radars. 
+There are many reasons for this, the main one being that radars are capable of directly observing precipitation particles (called hydrometeors) over a significant range with a high update rate and resolution \cite{schmid2019nowcasting}. This is something that no single other ground, upper-atmosphere, or radar observation is capable of providing, especially on the mesocscale ranging from tens to hundreds of kilometers. Combining many radars into a network can further increase sensing capacity to areas covering countries such as NEXRAD covering the continental united states \cite{noauthor_next_2020}, or entire continents such as the OPERA network covering most of Europe \cite{saltikoff_opera_2019}. 
+
+
+Radars were invented as a method to perform effective military surveillance during the second world war. Their potential use as weather observation tools was discovered coincidentally when it was realized that some echos of unknown origin in these surveillance radars were indeed precipitation. After the war, weather radars started to be routinely used in affluent parts of the world to provide precipitation observations and warnings.\cite{fabry_radar_2018}
+
+
+The working of weather radars is based on emitting a very strong, directed and polarized short  electromagnetic pulse, which will interact with objects and particles in the atmosphere. This interaction is scattering, which reflects back a tiny fraction of the electromagnetic energy emitted at first. A receiver then listens to these returning signals, that are often called \textit{radar echos}. A radar typically scans the atmosphere radially at multiple azimuthal elevation angles. In addition to that angle, the vertical path of the beams, and consequently the vertical position of objects detected, are affected by the curvature of the earth and the refractive index of the atmosphere decreasing with height, bending the beam downwards. \cite{fabry_radar_2018}
+
+The lowest elevation angle scan is the one giving the most accurate information about precipitation actually hitting the ground, with echos further away being less reliable, as they come from targets upper in the sky. Higher elevation angle scans or products derived from a multitude of those can be used to further inform about the dynamics and development of precipitation. Combining scans and derived products from multiple radars into a single image makes what is called a \textit{radar composite}.
+%Some radars such as phased-array weather radars have a high vertical resolution with lots of elevation angles and fast update speeds, can be used to build three-dimensional reflectivity maps that help with more accurate nowcasting by taking into account vertical motion .
+
+In addition to meteorological echos, various non-meteorological sources are picked up by weather radars, such as solid obstacles, birds migrating, and insects. It is important to filter out or at least acknowledge those sources when preparing data for nowcasting. 
+
+
+\textit{Reflectivity} ($Z$) is the quantity describing the amount of signal reflected from hydrometeors in the sky to the radar receiver. It is usually described in units of of decibel relative to $Z$, denoted $dBZ$. Standard weather radar beams are horizontally polarized, which produces the signals of interest when looking at radar scans for precipitation. One recent development of weather radars is the introduction of double polarization, meaning that in addition to the horizontal one, there are scans performed with vertically polarized beams. This enables estimation of precipitation type, drop shape, and helps with separating non-meteorological echos. Another important improvement to weather radars is the addition of doppler capacity, enabling estimation of target velocities from radar scans. 
+
+
+Converting the knowledge of (horizontal) reflectivity to that of rain rate is a highly non-trivial task and relies on approximations, because while water content is proportional to the third power of water droplet diameter, reflectivity of a single drop is proportional to its sixth power. Hence, total reflectivity depends on the drop size distribution, which depends on climatology and precipitation types. Given appropriate knowledge, the relationship between reflectivity and rain rate, commonly known as the Z-R relationship, is defined as  
 
 \begin{equation}
 \label{eq:z-r}
-	z = AR^b
+	Z = AR^b
 \end{equation}
 
-where $z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirically determined parameters. Reflectivity is calculated 
-
-\subsection{Overview of weather forecast methods}
-\begin{itemize}
-	\item Taking a broad look into the NWP process: Data collection, data assimilation, numerical prediction, postprocessing into forecast products
-	\item NWP in the context of precipitation forecasts
-\end{itemize}
+where $Z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirically determined parameters, usually by fitting rain gauge measurements to measured reflectivities. The most famous and widely used $A$ and $b$ parameters come from a study on drop size distribution from Marshal and Palmer in 1948 \cite{marshall1948size}, where $A=200$ and $b=1.6$.
 
 
-\subsection{Precipitation nowcasting : classical deterministic methods}
+
+
+
+
+\subsection{Classical deterministic methods}
 \label{section:classic_nowcast}
+
+The reason for this is that extrapolation is based on the assumption of Lagrangian persistence, meaning that in Lagrangian coordinates, the field stays constant. In other 
+
 \begin{itemize}
+	\item Explain lagrangian frame of view vs eulerian
 	\item Basic principles of advection equations. 
 	\item Chronological advancing, with +/- of each method
 \end{itemize}
 
-\subsection{Precipitation nowcasting : classical probabilistic methods}
+\subsection{Classical probabilistic methods}
 \begin{itemize}
 	\item approach types, ensemble etc
 \end{itemize}
 
-\subsection{Machine learning approaches to precipitation nowcasting}
+\subsection{Machine learning approaches}
 \begin{itemize}
 	\item 
 \end{itemize}
@@ -49,6 +75,8 @@ where $z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirical
 Multi-Scale Structural Similarity Index (MS-SSIM), originally an image quality assessment metric \cite{wang_multiscale_2003}, has recently started to be used as a loss function in deep learning, particularly in image reconstruction tasks. One of its main assets is that its single-scale counterpart (SSIM) has been shown to reduce blurring in image reconstruction \cite{zhao_loss_2017} making it a good candidate loss function for nowcasting with neural networks, as it has been seen that these models suffer from excessive blurring, effectively minimizing standard loss functions such as Mean Squared Error (MSE), but failing to predict useful patterns such as heavy localized rainfall. Indeed in recent years, there has been some cases where MS-SSIM or SSIM started have started to be used in 
 
 \section{Bayesian Deep Learning}
+
+\subsection{Neural Networks}
 
 \subsection{Learning Probability Distributions}
 \begin{itemize}
@@ -165,16 +193,15 @@ Multi-Scale Structural Similarity Index (MS-SSIM), originally an image quality a
 	
 \subsection{Predictive uncertainty estimation and decomposition}
 
-\fixme{ find good ref on sources}
-\begin{itemize}
-	\item Where does uncertainty come from
-	\item division into epistemic, aleatoric uncertainty in ML
-	\item Division for classification
-	\item Division for regression 
-	
-\end{itemize}
+\textit{Predictive uncertainty} is defined as the total uncertainty arising in practice when making predictions with a probabilistic or ensemble based model.
+Broadly speaking, in deep learning predictive uncertainty can be divided into two main categories. These are  \textit{aleatoric uncertainty}, which originates from the input data, and \textit{epistemic uncertainty}, which originates in the inaccuracy of the model. Epistemic uncertainty can be reduced with more training, while aleatoric uncertainty can not be by definition. Furthermore, aleatoric uncertainty is classified into homoscedastic and heteroscedastic aleatoric uncertainties in the context where one tries to estimate it. The former assumes that all observation share the same underlying uncertainty, while the latter allows each observation uncertainty to differ. \cite{shridhar_comprehensive_2019}
 
-\section{Related work}
+Characterization of uncertainty is important because not taking it into account might lead to over-estimation or under-estimation of failure probability of a model, as explained by Der Kiureghian \cite{kiureghian_aleatory_2009}. 
+There exists techniques to decompose predictive uncertainty into aleatoric and epistemic uncertainties in deep learning. To model the epistemic component, these techniques base themselves on ensembles just like those produced by Bayesian Neural Networks, or the variability between ensemble members to be more precise. Strategies for modeling the aleatoric part differs between classification and regression tasks. In classification, heteroscedastic aleatoric uncertainty can be directly inferred from class logits without any network modification \cite{shridhar_comprehensive_2019, kwon_uncertainty_2020}. For regression on the other hand, there is a need to encode the uncertainty in the data as it is not there in the first place. By modeling the likelihood as homoscedastic Gaussian likelihood, one can learn a common homoscedastic uncertainty term for the dataset. By modeling the data as heteroscedastic Gaussian likelihood on the other hand, one can learn a different uncertainty term for each data point. This is done by separating the output of the network and its aleatoric uncertainty into two different channels towards the end of the network, and plugging these in the Gaussian likelihood accordingly \cite{kendall_what_2017}.
 
-\fixme{Section to include if 2.1.4 and 2.1.5 become convoluted}
+In radar-based nowcasting, the aleatoric uncertainty of models can be divided into that emanating from measurements and that coming from other factors induced by the processing of data inside the nowcasting process. Measurement uncertainty can again be subdivided into sampling-based and system-based uncertainties. Sampling uncertainty refers to the randomness coming from which hydrometeor or obstacle the radar beam encountered in the scanning process, and system-related ones come from various factors in the radar itself. According to Cao et al. \cite{cao_measurement_2016}, sampling-based uncertainties dominate in well-configured radar systems. Other factors inducing aleatoric uncertainty include all stages where information is possibly lost, such as data compression operations. Additionally, for methods where model outputs are iteratively fed back into the algorithm to produce new predictions, the whole compound uncertainty of the previous step output is accounted as aleatoric uncertainty in the next step. 
+
+
+Prediction error and uncertainty are related to each others but not equivalent. Sources of errors can be used to partly infer sources of uncertainty, keeping in mind that model outputs may have high bias (possible error) but low variance (uncertainty). Bowler et al. enumerates sources of prediction errors in the context of advection based models, dividing them into three categories. These are errors in estimating the initial advection field, in modeling its time evolution and the Lagrangian evolution of features \cite{bowler_steps_2006}. Part of these errors are related to the model itself, and as epistemic uncertainty can by definition be reduced, these sources of error can be in decreased in practice. This can be achieved by for example improving data quantity and quality with regards to the task at hand, improving the functional model to better express dependencies between outputs and outputs, and by improving the training procedure by choosing more appropriate inductive biases, such as a more fitting prior in Bayesian Deep Learning. 
+
 

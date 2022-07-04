@@ -34,8 +34,10 @@ for the current data.
 
 \begin{figure}
 	\label{fig:domain}
-	\missingfigure[figwidth=12cm, figheight=10cm]{FMI radar domain, bbox}
-	\caption{FMI radar domain and the chosen bounding box covering southern Finland.}
+	\centering
+	%\missingfigure[figwidth=12cm, figheight=10cm]{FMI radar domain, bbox}
+	\includegraphics[scale=1.2]{images/domain/fmi_domain}
+	\caption{FMI radar domain and the chosen bounding box covering southern Finland. The three letter codes identify the radars, inner circles their worst case effective range (usu. during summer), and outer circles their best case effective range (usu. during winter). The lowest level reflectivity composite from the 30th of June 2020 at 00:05:00 is depicted on the right.}
 \end{figure} 
 
 
@@ -86,7 +88,7 @@ D_{KL}(q(\mathcal{D}|\pmb{w}) || P(\pmb{w})) =
 
 where $q$ and $P$ denote the multivariate diagonal posterior and prior, $\mu_q$ and $\mu_P$ their respective means, $\sigma_P$ and $\sigma_q$ their respective standard deviations and  $d$ the identity matrix of the number of dimensions equal to that of the distributions. 
 
-In BCNN, the radar images were scaled between 0 and 1 using the same procedure as described for the MS-SSIM loss function in the context of RainNet in section \ref{section:rainnet}. The data likelihood cost was modeled as Homoscedastic Gaussian likelihood, defined by 
+In BCNN, the radar images were scaled between 0 and 1 using the same procedure as described for the MS-SSIM loss function in the context of RainNet in section \ref{section:rainnet}. The data likelihood cost was modeled as Homoscedastic Gaussian likelihood \cite{kendall_what_2017}, defined by 
 
 \begin{equation}
 	\mathcal{L}_{Gauss}(y, \hat{y}) = \frac{1}{N} \sum_{i=1}^{N} \frac{1}{2\sigma^2}||y_i - \hat{y}_i||^2 
