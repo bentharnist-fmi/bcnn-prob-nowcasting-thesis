@@ -47,10 +47,6 @@ Converting the knowledge of (horizontal) reflectivity to that of rain rate is a 
 where $Z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirically determined parameters, usually by fitting rain gauge measurements to measured reflectivities. The most famous and widely used $A$ and $b$ parameters come from a study on drop size distribution from Marshal and Palmer in 1948 \cite{marshall1948size}, where $A=200$ and $b=1.6$.
 
 
-
-
-
-
 \subsection{Classical deterministic methods}
 \label{section:classic_nowcast}
 
@@ -68,6 +64,8 @@ The reason for this is that extrapolation is based on the assumption of Lagrangi
 	\item Cell based : TITAN and further improvements
 \end{itemize}
 
+
+
 \subsection{Classical probabilistic methods}
 \begin{itemize}
 	\item Ensemble based, quantile based (?)
@@ -83,10 +81,13 @@ The reason for this is that extrapolation is based on the assumption of Lagrangi
 
 Artificial Neural Networks, abbreviated Neural Network or NN in a machine learning context, are computational systems inspired by biological neural networks, such as those present in the human brain. In this work, the terms Deep Learning will be used as meaning "regarding neural networks and their usage". Neural networks serve to accomplish many tasks, usually of the domain of artificial intelligence, such as regression, classification, or agent decision making. NN consist of discrete units called neurons linked to each others, usually arranged in functional units known as layers, in which case connections are formed between layers. Input data is fed into the NN to an input layer, transforming the input through learnable parameters, and this transformed signal is propagated through other layers further transforming the signal. The organization of layers and the way they are connected is known as the \textit{network architecture}. Finally, signals converge to an output layer giving the product of the network, such as a prediction or class of input data. Between neurons and layers there are non-linear \textit{activation functions}, which are in essence non-linear transformation on data, which are the basic mechanism that enables neural networks to learn complex nonlinear patterns.
 
+\subsubsection*{Neural Network Optimization}
+
 In Neural Networks, parameters are usually not tuned by hand due to the sheer complexity of the task. Instead, finding optimal parameters for performing the task is framed as an optimization problem. This is accomplished using standard unconstrained optimization tools and the Backpropagation algorithm, allowing learning of the parameters, despite of the problem being very high-dimensional and non-convex. This algorithm is based on producing an output by passing input data through the network, and then calculating a metric of how well the network succeeded at the task, known as a \textit{loss function} or cost function. The gradient of the output related to network parameters are then calculated backwards starting from the loss function, flowing through the network using the chain rule of derivation. These gradients are then used to update model parameters using simple gradient descent or its variations. 
 
 Usually, the input data is divided input small subsets called \textit{batches} or mini-batches, and the gradient updates are calculated by going iteratively through them in a process called \textit{training}. Gradient descent over these mini-batches is called Stochastic Gradient Descent. Going through all of the training data one time is called an \textit{epoch}, and training is usually continued for many epochs. In deep learning, available data is usually split into training, validation, and test data. Validation data is used for the validation process, in which performance of the NN is assessed on data unused for training. This information on performance can then be used to tune \textit{hyperparameters}, that is parameters that are constant and set before training, or perform other types decision-making related to the training process, such as early stopping of the training, if performance is likely not to improve anymore. The reason why training data is not used here is that the network usually performs better on data that it was trained on compared to other data. Lastly, test data is used for independent assessment of the network performance. This is needed because even though validation data is not used for training, the network is still biased to perform better on it if decision that improve performance were made based on it. Validation data can thus not be trusted on as an independent evaluator of network performance. 
 
+\subsubsection*{Different Varieties of Neural Networks}
 There are multiple types of Neural Network architectures that are each good at different types of task. Main types with some relevance to nowcasting and Bayesian Deep Learning are feed-forward neural networks, Recurrent Neural Networks (RNN), Convolutional Neural Networks (CNN) and Generative Adversarial Networks (GAN). Feed-forward neural networks are the earliest type of NN, with linear transformations of data in layers of neurons, where neurons of successive layers are all connected to each others.
 
  RNN are a modification of feed-forward neural networks with recurrent connections along units forming a network along a temporal sequence, making them widely used for the forecasting of time-series data and natural-language processing. Important improvements over original RNN are Long-Short Term Memory (LSTM) networks, with units having internal states allowing learning longer-range temporal dependencies, and Gated Recurrent Unit (GRU) modifying LSTM units to make them more lightweight. 
@@ -96,44 +97,45 @@ CNN have layers that are convolutional filters applied over the input data. CNN 
 
 
 \subsection{Deep Learning approaches to Nowcasting}
-\begin{itemize}
-	%\item convLSTM, convGRU
-	%\item RainNet
-	%\item polarimetric data combined 
-	%\item using MS-SSIM shi et al.
-	\item GAN with Deepmind 
-	
-\end{itemize}
 
-There exists now many methods for producing deterministic nowcasts with machine learning, but most suffer the same problem of producing overly blurry nowcasts only after a few timesteps. There has been marginal improvement with regards to this problem over the years, but it remains one important challenge. For probabilistic nowcasts on the other hand, it will be seen that this is not such a big problems probabilistic nowcasts have different needs. 
+
+There exists now many methods for producing deterministic nowcasts with machine learning. Most suffer the same problem of producing overly blurry nowcasts only after a few timesteps. Despite there having been marginal improvement with regards to this problem over the years, but it remains one important challenge when it comes to producing deterministic nowcasts. The following chapters will present some of the main advancements in Deep Learning for nowcasting since its introduction.
+
+\subsubsection*{Basic Approaches}
  
 The first dedicated Deep Learning model for precipitation nowcasting is ConvLSTM by Shi et al. \cite{shi_convolutional_2015}, published in 2015, building upon the work of Oh et al. \cite{oh_action-conditional_2015}. ConvLSTM is a neural network combining the image feature encoding capacities of CNN and  temporal prediction capacities of LSTM into a single network fusing the two. ConvLSTM was shown to outperform an optical flow based model at predicting precipitation exceeding a low rain rate of 0.5 mm/h. 
 A further model inspired by ConvLSTM called TrajGRU is developed by Shi et al. \cite{shi_deep_2017} in 2017 by replacing the LSTM component with GRU and making recurrent connections dynamically location-variant. These connections improve the predictive skill over over invariant ones (ConvGRU), but the model was not tested against ConvLSTM. 
 
-Another class of models that have gained traction lately for nowcasting are simple U-Net based CNN, that adopts an image-to-image translation perspective on the problem. These networks are fed a sequence of radar images and output either one or several future frames. One example of this approach is  that of Agrawal et al. \cite{agrawal_machine_2019}. In case only one frame is outputted, predictions for several leadtimes in the future may be done by iteratively feeding back predictions into the network as input, as is done with Ayzel et al.'s RainNet \cite{ayzel_rainnet_nodate}. These CNN models also have the advantage of being computationally less expensive when compared to ConvLSTM variants. 
+Another class of models that have gained traction lately for nowcasting are simple U-Net based CNN, that adopts an image-to-image translation perspective on the problem. These networks are fed a sequence of radar images and output either one or several future frames. One example of this approach is  that of Agrawal et al. \cite{agrawal_machine_2019}. In case only one frame is outputted, predictions for several leadtimes in the future may be done by iteratively feeding back predictions into the network as input, as is done with Ayzel et al.'s RainNet \cite{ayzel_rainnet_nodate}. This iterative approach is more flexible but has the disadvantage of exacerbating the blurring problem. The CNN models in general have the advantage of being somewhat computationally less expensive when compared to ConvLSTM variants. 
+
+\subsubsection*{Notable Recent Improvements}
 
 Recently, Pan et al. improved the nowcasting of convective evolution by adding  polarimetric variables (ZDR and KDP) in addition to reflectivity scans as inputs to a U-Net based model \cite{pan_improving_2021}. These polarimetric variables are derived from double polarization weather radars and their values are strongly associated with life-cycles of convective cells. This work showcases the importance of multichannel data and not only relying on reflectivity if one wants to accurately model nonlinear evolution of precipitation.
 
 Above models suffers badly the the problem of blurring stated above, as do all current models based on discriminative neural networks, which are networks mapping one input to one output. Prediction blurring is in part related to loss functions used, as losses like $\ell_2$ (Mean Squared Error (MSE)) and $\ell_1$ tend to act that way when minimized with some uncertainty present. This excessive blurring also hinders the prediction of useful patterns such as heavy localized rainfall.
 Multi-Scale Structural Similarity Index (MS-SSIM), originally an image quality assessment metric \cite{wang_multiscale_2003}, has recently started to be used as a loss function in deep learning, particularly in image reconstruction tasks. One of its main assets is that its single-scale counterpart (SSIM) has been shown to reduce blurring in image reconstruction \cite{zhao_loss_2017} making it a good candidate loss function for nowcasting with neural networks.  Indeed in recent years, there has been some cases where MS-SSIM or SSIM started have started to be used in Deep learning based nowcasting models, such as the one of Yin et al. (2021) \cite{yin_application_2021}. Here both SSIM and MS-SSIM produced results surpassing MSE, with MS-SSIM giving the best results of the two. Most importantly, these loss functions seemed to better preserve high rain rates, which tended to vanish with traditional losses at higher leadtimes. 
 
+Perhaps one of the biggest breakthroughs made yet, is the use of Generative Adversarial Networks (GAN) by Ravuri et al. last year \cite{ravuri_skilful_2021}. This approach of using a generative model, i.e. one that generates samples from a probability distribution conditioned on past radar measurements, manages to solve the problem of nowcast blurring. GAN are a class of networks based on the competition between a generator network that generates the samples and discriminator(s) networks trying to discern whether these generated samples are real or fake. The generator then tries to fool the discriminators in a zero-sum game. Ravuri et al. use a generator network based on a convGRU architecture, nowcasting 90 minutes at once, two discriminators, and a regularization term penalizing deviations of generated samples at the grid level. The first discriminator ensures spatial consistency and the lack of blurring, while the second one ensures temporal consistency in generated sequences. The resulting generative model has slightly superior skill compared to existing approaches, but most importantly overwhelmingly over alternatives preserves features that make for a good nowcast from an operational forecaster point of view and is capable of providing probabilistic nowcasts which is very useful \cite{ravuri_skilful_2021}
+
+There has so far been limited work in probabilistic nowcasting with Deep Learning. In addition to the GAN by Ravuri et al. that can be used for such purpose, a probabilistic nowcasting model called MetNet was developed by Sonderby et al. \cite{sonderby_metnet_2020}. The model is based on Axial Self-Attention by Ho et al. \cite{ho_axial_2019} and is capable of beating HRRR on probabilistic verification metrics for leadtimes of up to 8 hours. 
+ 
 \section{Bayesian Deep Learning}
 
+This section gives an overview on Bayesian Neural Networks, that will be used make probabilistic nowcasts in this work.
+
 \subsection{Learning Probability Distributions}
-\begin{itemize}
-	\item first old studies
-	\item link overfitting to the bias-variance trade-off
-\end{itemize}
 
 	Neural networks are extremely useful model that on the other hand are very complex, in the sense that they have many optimizable parameters. The effect of this is that they are sensible to \textit{overfitting}, meaning that if left unchecked they will learn spurious patterns in the data, over-adapting to the training dataset and worsening generalization ability. In order to counter this, different mechanisms exist that bias the neural network towards learning simpler representations that have better generalization ability when presented with out-of-training-data examples. This concept is known as \textit{regularization}. Over the past decades, many regularization mechanisms have been successfully developed and applied to the training of deep neural networks. Notable examples include Dropout and weight decay, also known as L2-regularization.  
 	
 	One caveat of these classical regularization methods is that they do not enable representing the uncertainty of neural networks in unexplored regions, although they do improve performance in them. As it has understandably many benefits to make a neural network able to say "I don't know", a way to represent different plausible scenarios arising with novel data is needed. 
 	
-	There are two ways of approaching uncertainty estimation in neural networks. One is to directly model the uncertainty of predictions, and the other is to model the uncertainty of model parameters. These two are often complementary, but The latter approach has the benefit of providing implicit regularization to the network and is indeed the primary focus of this work. Learning this uncertainty of model parameters is most often accomplished using Bayesian Neural Networks (BNN). Strictly speaking, BNN are a class of stochastic neural networks, that is NN with stochastic components, where the parameters are probability distributions that are estimated using Bayesian inference.
+	There are two ways of approaching uncertainty estimation in neural networks. One is to directly model the uncertainty of predictions, and the other is to model the uncertainty of model parameters. These two are often complementary, but The latter approach has the benefit of providing implicit regularization to the network and is indeed the primary focus of this work. Learning this uncertainty of model parameters is most often accomplished using Bayesian Neural Networks (BNN). Strictly speaking, BNN are a class of stochastic neural networks, that is NN with stochastic components, where the parameters are probability distributions that are estimated using Bayesian inference.Bayesian Neural Networks in their current form were introduced by MacKay in 1992 \cite{mackay1992practical}, after early works starting in 1987 by Denker et al. \cite{denker1987large}, Tishby et al. \cite{tishby_consistent_1989}, Denker and LeCun \cite{denker_transforming_1990}, and Buntine and Weigend \cite{buntine1991bayesian}. 
 	
 	In a Bayesian framework, the posterior distributions of parameters are estimated conditioned on data and a prior. Because exact Bayesian inference involves dealing with intractable integrals, it is not doable to solve them for real-world neural networks having thousands to millions of parameters. As such, two broad categories of inference methods have been developed for use in BNN. The first one is using Markov-Chain Monte-Carlo (MCMC) to sample from posterior distributions. MCMC works well for smaller-scale models, but it is limited to only thousands of parameters because of the computational expensiveness of Markov-Chain simulations. 
 	
-	The second inference method category is Variational Inference (VI). The main idea behind variational inference is to turn the problem of finding the intractable true bayesian posterior into that of finding the closest distribution from a limited distribution family (the variational posterior) with regards to the true posterior. This turns the problem of solving an integral into that of optimization, allowing the use of classical unconstrained optimization methods. 
+	The second inference method category is \textit{Variational Inference} (VI). The main idea behind variational inference is to turn the problem of finding the intractable true bayesian posterior into that of finding the closest distribution from a limited distribution family (the variational family) with regards to the true posterior. This turns the problem of solving an integral into that of optimization, allowing the use of classical unconstrained optimization methods. 
+	
+	Dropout was surprisingly shown to be an instance of variational inference with a Bernoulli distributed posterior by Gal and Ghahramani in 2016 \cite{gal_dropout_2016}. This legitimizes the use of Monte-Carlo Dropout, a technique used to get predictive uncertainty estimates from networks with Dropout layers, by simply not switching off the layers for inference and thus drawing Monte-Carlo samples of the data distribution. Although not as expressive as explicit Bayesian NN, MC dropout has no computational overhead and is simple to implement, making it a very popular alternative to BNN. 
 	
 	In the context of Bayesian Deep Learning, the underlying neural network architecture will be referred to as the functional architecture or the functional model. Other components such as the inference method, the prior,  or the posterior modeling will be commonly referred to as the stochastic model. 
 	
@@ -143,68 +145,88 @@ Multi-Scale Structural Similarity Index (MS-SSIM), originally an image quality a
 \label{section:vi}
 
 
-	Variational inference as a means of training bayesian neural networks was first introduced by Hinton and Camp in 1993 \cite{hinton_keeping_1993}. However it was not used for a long time before breakthroughs by Graves et al. (2011) \cite{graves_practical_2011} and Blundell et al. (2015) \cite{blundell_weight_2015} permitted its use in large-scale neural networks. 
+	Variational inference as a means of training bayesian neural networks was first introduced by Hinton and Camp in 1993 \cite{hinton_keeping_1993}. However it was not used for a long time before breakthroughs by Graves et al. (2011) \cite{graves_practical_2011} and Blundell et al. (2015) \cite{blundell_weight_2015} permitted its use in large-scale neural networks. The following sections will introduce the loss function and optimization algorithm used, mostly based on the work of Blundell et al. \cite{blundell_weight_2015}.
 	
+	\subsubsection*{Evidence Lower Bound loss function}
+	Finding the variational posterior $q(\pmb{w}|\theta)$ best approximating the true posterior is formalized as minimizing the Kullback-Leiber (KL)-divergence between the two distributions as 
+	
+	\begin{equation}
+		\label{eq:kl}
+		\theta^* = \arg \min_{\theta} \text{KL}
+		(
+		q(\pmb{w}|\theta) 
+		||
+		P(\pmb{w}|\mathcal{D})
+		)
+	\end{equation}
+	
+	where $\theta$ refers to variational posterior parameters,$\pmb{w}$ to the weights, $\mathcal{D}$ to the data, $q$ to the variational distribution, and $P$ to the true distribution. The KL-divergence is defined as
+	
+	\begin{equation}
+		KL((q(\pmb{w}|\theta) ||P(\pmb{w}|\mathcal{D}))) = \int q(\pmb{w}|\theta) \log \frac{q(\pmb{w}|\theta)}{P(\pmb{w}|\mathcal{D})} d\theta
+	\end{equation}
+	
+	This definition can be used to turn the minimization objective into 
+	
+	\begin{equation}
+		\arg \min_{\theta}
+		\mathbb{E}_{q(\pmb{w}|\theta)}[\log q(\pmb{w}|\theta)] -
+		\mathbb{E}_{q(\pmb{w}|\theta)}[P(\pmb{w},\mathcal{D})] + 
+		\log P(\mathcal{D})
+	\end{equation} 
+	
+	 Here the evidence $P(\mathcal{D})$ is very difficult to estimate. Luckily though, the minimization objective does not depend on it, so a new objective called the evidence lower bound (ELBO) or variational free energy is used instead, which is defined as 
 	 
+	 \begin{equation}
+	 	\text{ELBO}(q) = -(KL((q(\pmb{w}|\theta) ||P(\pmb{w}|\mathcal{D}))) - \log P(\mathcal{D}))
+	 \end{equation}
+	 
+	 Solving for the evidence $\log P(\mathcal{D})$, it is clear that ELBO is a veritable lower bound for the it, as KL-divergences can not be negative.  
+%	\begin{itemize}
+%		\item deriving ELBO -> DONE
+%		\item Bayes by Backprop and SVI -> DONE
+%		\item Local reparametrization
+%		\item Monte-Carlo dropout as VI -> DONE
+%		\item where else is VI used DEL
+%		\item problems with VI DEL -> Discussions 
+%	\end{itemize}
 
-	\begin{itemize}
-		\item deriving ELBO
-		
-		
-		\item Bayes by Backprop and SVI
-		\item Local reparametrization
-		\item Monte-Carlo dropout as VI
-		\item where else is VI used
-		\item problems with VI
-	\end{itemize}
-
-	The evidence lower bound (ELBO), also known as variational free energy, is thus defined as 
+	ELBO can be rewritten as
 	
 	\begin{equation}
 	\label{eq:elbo}
-		\mathcal{F}(\mathcal{D}, \sigma) = 
-		\text{KL}[q(\pmb{w}|\sigma) || P(\pmb{w})] - \mathbb{E}_{q(\pmb{w}|\sigma)}[\log(P(\mathcal{D}|\pmb{w}))]
+		\mathcal{F}(\mathcal{D}, \theta) = 
+		\text{KL}[q(\pmb{w}|\theta) || P(\pmb{w})] - \mathbb{E}_{q(\pmb{w}|\theta)}[\log(P(\mathcal{D}|\pmb{w}))]
 	\end{equation}
+	
+	which is a form more suitable for the development of an optimization method. Here and from now on, ELBO will be referred to with the $\mathcal{F}$ symbol. For the rest of this work, the variational posterior family will be assumed to be that of Gaussian distributions, as the \textit{Bayes-by-Backprop} (BBB) algorithm described in the following section works on this posterior family. 
+	
+	\subsubsection*{The Bayes-by-Backprop Algorithm}
 
-	In order to apply backpropagation, the standard deviation is parametrized with a parameter $\rho \in \mathbb{R}$, such that $\sigma = \log(1 + \exp(\rho)) \in (0,\infty)$. 
+	In order to apply backpropagation to Bayesian Neural Networks with variational inference, any sampling operation must be made external to the network in order to allow gradients to flow backwards. This is accomplished by parametrizing the standard deviation $\sigma$, which is the parameter linked to uncertainty in weights, with a parameter $\rho \in \mathbb{R}$, such that $\sigma = \log(1 + \exp(\rho)) \in (0,\infty)$. 
+	This is known as the reparametrization trick. Weights $\pmb{w} = t(\sigma, \epsilon)$ are made deterministic functions of posterior parameters and the external stochastic noise $\epsilon$. This is what allows gradients to flow through the network by making sampling external. 
 	
-	This is known as the reparametrization trick. Weights $\pmb{w} = t(\sigma, \epsilon)$ are made deterministic functions of posterior parameters and the external stochastic noise $\epsilon$. This allows gradients to flow through the network as sampling operations are external. 
-	
-	\begin{itemize}
-		\item how does variance scale for basic re-parametrization trick?
-		\item more Details on LRT
-	\end{itemize}
-
-	Kingma et al. (2015) \cite{kingma_variational_2015} introduced a modification to the reparametrization trick, called the \textit{local reparametrization trick} (LRT). It works similarly but layer activations are sampled using $\epsilon$ rather than weights in order to reduce the computational cost, and even more importantly variances in a minibatch, allowing for faster training. 
-	
-	\begin{itemize}
-		\item Flipout and its possible advantages over LRT
-	\end{itemize}
-	
-	Using the reparametrization trick and 
+	Using the reparametrization trick and the proposition
 	
 	\begin{equation}
-	\frac{\partial}{\partial \sigma} \mathbb{E}_{q(\pmb{w}|\sigma)}[f(\pmb{w}, \sigma)] =
-	\mathbb{E}_{q(\epsilon)}[\frac{\partial f(\pmb{w}, \sigma)}{\partial \pmb{w}} + \frac{\partial \pmb{w}}{\partial \sigma}
-	\frac{\partial f(\pmb{w}, \sigma)}{\partial \pmb{w}}]
+	\label{eq:prop}
+	\frac{\partial}{\partial \theta} \mathbb{E}_{q(\pmb{w}|\theta)}[f(\pmb{w}, \theta)] =
+	\mathbb{E}_{q(\epsilon)}[\frac{\partial f(\pmb{w}, \theta)}{\partial \pmb{w}} + \frac{\partial \pmb{w}}{\partial \theta}
+	\frac{\partial f(\pmb{w}, \theta)}{\partial \pmb{w}}]
 	\end{equation}
 	
-	the ELBO cost function (Eq. \ref{eq:elbo}) can be rewritten as in a form amendable to minibatch optimization, yielding
-	
-	\begin{itemize}
-		\item Elaborate on the above proposition by Blundell et al
-	\end{itemize}
+	from Blundell et al. \cite{blundell_weight_2015}, the ELBO cost function (Eq. \ref{eq:elbo}) can be rewritten as in a form amendable to minibatch optimization, yielding
 	
 	\begin{equation}
 	\label{eq:mini_elbo}
-	\mathcal{F}(\mathcal{D}, \sigma) \approx \sum_{i=1}^{n}\log q(\pmb{w}^{(i)}|\sigma) - \log P(\pmb{w}^{(i)}) - \log P(\mathcal{D}|\pmb{w}^{(i)})
+	\mathcal{F}(\mathcal{D}, \theta) \approx \sum_{i=1}^{n}\log q(\pmb{w}^{(i)}|\theta) - \log P(\pmb{w}^{(i)}) - \log P(\mathcal{D}|\pmb{w}^{(i)})
 	\end{equation}
 	
-	Here $\pmb{w}^{(i)}$ denotes the $i$:th monte-carlo sample drawn the the posterior.
+	an unbiased Monte-Carlo estimator of ELBO. Here $\pmb{w}^{(i)}$ denotes the $i$:th monte-carlo sample drawn the the posterior. The proposition \ref{eq:prop} follows from the reparametrization trick.
 	
 	From the terms in eq. \ref{eq:mini_elbo}:
 	\begin{enumerate}
-		\item $\log q(\pmb{w}^{(i)}|\sigma)$ is the log likelihood of weights given the current posterior distribution.
+		\item $\log q(\pmb{w}^{(i)}|\theta)$ is the log likelihood of weights given the current posterior distribution.
 		
 		\item $-\log P(\pmb{w}^{(i)})$ is the negative log likelihood of the weights given the prior, which is usually not learned and serves as a regularization mechanism. 
 		
@@ -212,12 +234,35 @@ Multi-Scale Structural Similarity Index (MS-SSIM), originally an image quality a
 	\end{enumerate}
 	
 	\vspace*{2mm}
-	The first two terms are grouped together as the complexity cost, while the last term is also often called the complexity cost. 
+	The first two terms are grouped together as the complexity cost, while the last term is often called the Likelihood cost. With all of the conditions in place, optimization takes place in pretty much the same way as for basic backpropagation, only updating two variables instead of one ($\mu$ and $\rho$ instead of point estimates). One step of the optimization loop is 
+	
+	\begin{enumerate}
+		\item Sample $\epsilon \sim \mathcal{N}(0,1)$
+		\item Let  $ \pmb{w} = \mu + \log(1 + \exp(\rho)) \circ  \epsilon$, $\theta = (\mu, \rho)$ \\ $\circ$ referring to point-wise multiplication.
+		\item Let $f(\pmb{w}, \theta) = \log(q(\pmb{w}|\rho)) - \log(P(\pmb{w})P(\mathcal{D}|w))$
+		\item Calculate gradients w.r.t. $\mu$ and $\sigma$:
+		\begin{enumerate}
+			\item $\Delta_\mu  = \frac{\partial f(\pmb{w},\theta)}{\partial \pmb{w}} + 
+			\frac{\partial f(\pmb{w},\theta)}{\partial \mu}$ 
+			
+			\item $\Delta_\rho  = \frac{\partial f(\pmb{w},\theta)}{\partial \pmb{w}}\frac{\epsilon}{1 + \exp(-\rho)} +
+			\frac{\partial f(\pmb{w},\theta)}{\partial \rho}$
+		\end{enumerate}
+		Then parameters are simply updated as:
+		\begin{enumerate}
+			\item $\mu \leftarrow \mu - \alpha \Delta_\mu$
+			\item $\rho \leftarrow \rho - \alpha \Delta_\rho$ 
+		\end{enumerate}
+	\end{enumerate}
+	
+	
+	
+	\subsubsection*{Complexity cost weighting and priors}
 	
 	The cost to be minimizing can be again rewritten as 
 	
 	\begin{equation}
-		\mathcal{F}^\pi_i(\mathcal{D_i}, \sigma) = \pi_i \text{KL}[q(\pmb{w}|\sigma) || P(\pmb{w})] - \mathbb{E}_{q(\pmb{w}|\sigma)}[\log P(\mathcal{D}_i|\pmb{w})]
+		\mathcal{F}^\pi_i(\mathcal{D_i}, \theta) = \pi_i \text{KL}[q(\pmb{w}|\theta) || P(\pmb{w})] - \mathbb{E}_{q(\pmb{w}|\theta)}[\log P(\mathcal{D}_i|\pmb{w})]
 	\end{equation}
 	
 	Here $\pi_i$ is the relative weighting of the complexity cost in the $i$:th minibatch. 
@@ -234,6 +279,14 @@ Multi-Scale Structural Similarity Index (MS-SSIM), originally an image quality a
 	
 	where $\sigma_1 > \sigma_2$ and often $\sigma_2 \ll 1$, $\alpha$ is the relative weights of the two scales, and $\pmb{w}_j$ is the $j$:th weight of the neural network. 
 	
+	\subsubsection*{Alternative reparametrizations}
+
+	One problem with conventional Bayes-By-Backprop is that the same $\epsilon$ is used for each parameter in a layer. One side effect of this is that gradients of different weights are correlated, hindering the training. 
+	
+	Kingma et al. (2015) \cite{kingma_variational_2015} introduced a modification to the reparametrization trick, called the \textit{local reparametrization trick} (LRT). This modification works similarly but rather than weights, pre-activation layer outputs are sampled using $\epsilon$, with a different $\epsilon$ for each output. This reduces variances in a minibatch, allowing for faster training overall. Kingma et al. showed that the unbiased Monte-Carlo estimator of log likelihood in Blundell et al. has variance that does not decrease with batch size because of the contribution of batch member covariances due to shared $\epsilon$, and consequently designs an estimator with zero covariance, leading to the method above. Gradient variances with LRT thus are inversely proportional to batch size, leading to easier optimization with higher batch sizes. 
+
+	Flipout by Wen et al. \cite{wen_flipout_2018} is another modification to Bayes-by-Backprop, attempting to solve the same problem. While LRT can only be used for fully-connected feed-forward neural networks with no weight sharing, Flipout can be used on other architectures too \cite{wen_flipout_2018}. Flipout works the same as BBB, except for the fact that it multiplies the sampled $\epsilon$ by a random sign matrix of the size of the parameter space. This way the $\epsilon$ are to some degree made pseudo-random, decreasing the gradient variances for a very meager computational cost.
+	
 \subsection{Predictive uncertainty estimation and decomposition}
 
 \textit{Predictive uncertainty} is defined as the total uncertainty arising in practice when making predictions with a probabilistic or ensemble based model.
@@ -241,6 +294,8 @@ Broadly speaking, in deep learning predictive uncertainty can be divided into tw
 
 Characterization of uncertainty is important because not taking it into account might lead to over-estimation or under-estimation of failure probability of a model, as explained by Der Kiureghian \cite{kiureghian_aleatory_2009}. 
 There exists techniques to decompose predictive uncertainty into aleatoric and epistemic uncertainties in deep learning. To model the epistemic component, these techniques base themselves on ensembles just like those produced by Bayesian Neural Networks, or the variability between ensemble members to be more precise. Strategies for modeling the aleatoric part differs between classification and regression tasks. In classification, heteroscedastic aleatoric uncertainty can be directly inferred from class logits without any network modification \cite{shridhar_comprehensive_2019, kwon_uncertainty_2020}. For regression on the other hand, there is a need to encode the uncertainty in the data as it is not there in the first place. By modeling the likelihood as homoscedastic Gaussian likelihood, one can learn a common homoscedastic uncertainty term for the dataset. By modeling the data as heteroscedastic Gaussian likelihood on the other hand, one can learn a different uncertainty term for each data point. This is done by separating the output of the network and its aleatoric uncertainty into two different channels towards the end of the network, and plugging these in the Gaussian likelihood accordingly \cite{kendall_what_2017}.
+
+\subsubsection*{Uncertainty in Radar-based Nowcasting}
 
 In radar-based nowcasting, the aleatoric uncertainty of models can be divided into that emanating from measurements and that coming from other factors induced by the processing of data inside the nowcasting process. Measurement uncertainty can again be subdivided into sampling-based and system-based uncertainties. Sampling uncertainty refers to the randomness coming from which hydrometeor or obstacle the radar beam encountered in the scanning process, and system-related ones come from various factors in the radar itself. According to Cao et al. \cite{cao_measurement_2016}, sampling-based uncertainties dominate in well-configured radar systems. Other factors inducing aleatoric uncertainty include all stages where information is possibly lost, such as data compression operations. Additionally, for methods where model outputs are iteratively fed back into the algorithm to produce new predictions, the whole compound uncertainty of the previous step output is accounted as aleatoric uncertainty in the next step. 
 
