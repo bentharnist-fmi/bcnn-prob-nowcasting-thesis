@@ -50,28 +50,59 @@ where $Z$ is reflectivity, $R$ is rainrate, and $A$ as well as $b$ are empirical
 \subsection{Classical deterministic methods}
 \label{section:classic_nowcast}
 
-The reason for this is that extrapolation is based on the assumption of Lagrangian persistence, meaning that in Lagrangian coordinates, the field stays constant. In other 
+%\begin{itemize}
+%	\item S-PROG and predictability scale dependence by Germann 
+%	\item ANVIL ...
+%	\item Cell based : TITAN and further improvements
+%\end{itemize}
 
-\begin{itemize}
-	\item Explain lagrangian frame of view vs eulerian
-	\item Basic principles of advection equations. 
-	\item Chronological advancing, with +/- of each method
-	\item Extrapolation: when introduced,
-	\item TREC, COTREC, etc
-	\item Burgers' eq, NS improvements 
-	\item S-PROG and predictability scale dependence by Germann
-	\item ANVIL ...
-	\item Cell based : TITAN and further improvements
-\end{itemize}
+When considering the atmosphere as a fluid, it is possible to apply tools and concepts of fluid dynamics to understanding processes happening in it, such as precipitation. In particular, one specific point of view is to consider precipitation as particles or matter moving through the forces exerted on it by the background atmospheric flow, here modeled as a liquid. This movement exerted by the surrounding medium is called \textit{advection} and the medium dynamic itself the \textit{advection field}. In practice, the flow consists of winds and other forces exerted on clouds and hydrometeors. Advection is described by the advection equation
 
+\begin{equation}
+	\label{eq:adv}
+	\frac{\partial \psi}{\partial t} + \nabla \cdot (\psi \pmb{v}) = 0
+\end{equation}
+
+Where $\phi$ denotes the precipitation field and $\pmb{v}$ the advection field. With this in mind, the advection of precipitation can be observed from two distinct points of view, corresponding two different sets of coordinates. These are \textit{Eulerian} and \textit{Lagrangian} coordinates. The simpler one is Eulerian coordinates, which are those of the grid or space in which precipitation evolves. Lagrangian coordinates on the other hand center around particles or discrete unit being advected, so that each stays at the origin in its own set of Lagrangian coordinates, while the surroundings evolve relative to it. 
+
+A precipitation field where the only time evolution happening is the precipitation being advected has a common Lagrangian coordinate system for all precipitation units. This is never truly the case, but the idea is useful for developing nowcasting models. This concept can be formalized as that of \textit{Lagrangian persistence}, meaning that in Lagrangian coordinates, the field stays constant. This is easy to understand by connecting the concept to its more natural counterpart of Eulerian persistence, where the precipitation field just stays constant from a motionless observer's point of view. Lagrangian persistence allows separating the time evolution of the precipitation field into an advection term and a source term, representing the divergence of the field, that is creation and weakening of precipitation. Assuming no divergence in the advection field, and using Eq. \ref{eq:adv} this is formalized as 
+
+\begin{equation}
+\
+\frac{\partial \psi}{\partial t} + \nabla \psi \cdot \pmb{v} = S 
+\end{equation}
+
+Where $S$ denotes the source term. Basic precipitation field extrapolation based methods usually focus on modeling the advection part as accurately as possible, while methods willing to go a step further try and model the source, representing nonlinear evolution of the field. 
+
+\subsubsection*{Extrapolation based models}
+
+The most basic form of modern model of the first category is pure extrapolation along an estimated advection field. Very often nowadays the advection field is estimated using an optical flow method, such as Lukas-Kanade optical flow \cite{lucas1981iterative} on successive radar frames and the precipitation field is extrapolated along that advection field. This is usually done using a Semi-Lagrangian Extrapolation scheme, which is a cheap way of performing numerical integration for the advection problem by breaking it into multiple interpolation operations. 
+
+Other models of the first category attempt to model the time evolution of the advection field and add some sort of diffusion term to better represent the loss of predictability being faster at smaller scales \cite{germann2002scale}. One such model is developed by Ryu et al. in 2020 \cite{ryu_improved_2020}. This model models the evolution of the advection field using Burgers' equation, containing an advection and diffusion term, and additionally adds a facultative diffusion term to the nowcasted field. Another example of a similar modification is the work of Sakaino (2013) \cite{sakaino_spatio-temporal_2013} where advection field temporal evolution was modeled using the Navier-Stokes with a continuity equation, and an anisotropic diffusion term, better conserving important details, was applied to the field. 
+
+Classical techniques such as Tracking Radar Echos through Correlation (TREC) \cite{rinehart_three-dimensional_1978} still being in great use. TREC simply calculates correlations between neighboring areas in successive frames and extrapolates the precipitation field along directions of maximum correlation. This technique is simple but suffers from problems in maintaining the spatial structure of echos over longer time-frames. Over the years, there has been an accumulations of models proposing improvements to TREC. There exists also many storm cell based nowcasting techniques such as TITAN by Dixon and Weiner (1993) \cite{dixon1993titan}. These techniques are often also based on extrapolation and many times enable tracking and forecast of cell life-cycle features, that are particularly useful in the context of convective storms. 
+
+\subsubsection*{Modeling non-linear evolution of precipitation fields}
+
+One of the early successful (in the sense that it presents improvement over advection-based extrapolation) attempts at modeling the time-evolution of precipitation fields is the Spectral Prognosis (S-PROG) model by Seed (2003) \cite{seed_dynamic_2003}. The model is based on the observation that precipitation feature lifetimes depend on their scale, with smaller features lasting shorter than bigger ones. This information is used by decomposing the precipitation field into a cascade of fields, each corresponding to features of a certain spatial scale. Each of those cascade level time evolution is then modeled separately using autoregressive (AR) models. One side effect of AR models interacting is that the field gets blurred with time. 
+
+A second model taking a similar approach is ANVIL by Pulkkinen et al. (2020) \cite{pulkkinen_nowcasting_2020}. Instead of single reflectivity scans or reflectivity derived products, ANVIL utilizes Vertically Integrated Liquid (VIL), an estimate of the total precipitation mass in a cloud, as a proxy to precipitation hitting the ground. ANVIL decomposes the field into a scale cascade just like S-PROG, but uses an autoregressive integrated process (ARI) to model the time-evolution at each level. ARI are autoregressive processes applied to the time derivative of the fields. ANVIL was shown to surpass S-PROG for the prediction of intense precipitation ($>$ 5 mm/h and $>$ 20 mm/h) using multiple verification metrics. 
 
 
 \subsection{Classical probabilistic methods}
+
+Probabilistic precipitation nowcasting has high utility and therefore a multitude of models have been developed for it. 
+Probabilistic nowcasting models can be roughly divided into two categories: Quantile-based and ensemble-based methods, the latter of which being the focus of this work. 
+% maybe something on quantile based stuff to add later
+
 \begin{itemize}
-	\item Ensemble based, quantile based (?)
 	\item STEPS, linked to S-PROG
 	\item LINDA 
 \end{itemize}
+
+There exists also neighborhood methods, that draw new precipitation values from neighbors at random to produce a probabilistic nowcast. The first of such methods to be implemented is by Andersson and Ivarsson (1991) \cite{andersson_model_1991}. 
+
+
 
 
 
@@ -88,7 +119,7 @@ In Neural Networks, parameters are usually not tuned by hand due to the sheer co
 Usually, the input data is divided input small subsets called \textit{batches} or mini-batches, and the gradient updates are calculated by going iteratively through them in a process called \textit{training}. Gradient descent over these mini-batches is called Stochastic Gradient Descent. Going through all of the training data one time is called an \textit{epoch}, and training is usually continued for many epochs. In deep learning, available data is usually split into training, validation, and test data. Validation data is used for the validation process, in which performance of the NN is assessed on data unused for training. This information on performance can then be used to tune \textit{hyperparameters}, that is parameters that are constant and set before training, or perform other types decision-making related to the training process, such as early stopping of the training, if performance is likely not to improve anymore. The reason why training data is not used here is that the network usually performs better on data that it was trained on compared to other data. Lastly, test data is used for independent assessment of the network performance. This is needed because even though validation data is not used for training, the network is still biased to perform better on it if decision that improve performance were made based on it. Validation data can thus not be trusted on as an independent evaluator of network performance. 
 
 \subsubsection*{Different Varieties of Neural Networks}
-There are multiple types of Neural Network architectures that are each good at different types of task. Main types with some relevance to nowcasting and Bayesian Deep Learning are feed-forward neural networks, Recurrent Neural Networks (RNN), Convolutional Neural Networks (CNN) and Generative Adversarial Networks (GAN). Feed-forward neural networks are the earliest type of NN, with linear transformations of data in layers of neurons, where neurons of successive layers are all connected to each others.
+There are multiple types of Neural Network architectures that are each good at different types of task. Main types with some relevance to nowcasting and Bayesian Deep Learning are feed-forward neural networks, Recurrent Neural Networks (RNN), and Convolutional Neural Networks (CNN). Feed-forward neural networks are the earliest type of NN, with linear transformations of data in layers of neurons, where neurons of successive layers are all connected to each others.
 
  RNN are a modification of feed-forward neural networks with recurrent connections along units forming a network along a temporal sequence, making them widely used for the forecasting of time-series data and natural-language processing. Important improvements over original RNN are Long-Short Term Memory (LSTM) networks, with units having internal states allowing learning longer-range temporal dependencies, and Gated Recurrent Unit (GRU) modifying LSTM units to make them more lightweight. 
 
