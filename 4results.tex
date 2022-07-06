@@ -1,18 +1,121 @@
 \chapter{Results}
 \label{chapter:results}
 
+\section{Selecting the best BCNN model}
+
+\begin{figure}[h]
+	\label{fig:convergence-bcnn}
+	\centering
+	\missingfigure[figwidth=12cm, figheight=8cm]{Plot showing convergence of different BCNN highlighting model selection process}
+	\caption{Plot showing convergence of different BCNN highlighting model selection process}
+\end{figure}
+
+\begin{figure}[ht]
+	\label{fig:bcnn-candidates}
+	\centering
+	\missingfigure[figwidth=14cm, figheight=8cm]{Plot showing how different priors with weighting affect an example nowcast}
+	\caption{Plot showing how different priors with weighting affect an example nowcast}
+\end{figure}
+
 \section{Case studies for nowcasts}
-\subsection{Case study 1 : Large-scale Stratiform rain event}
+\subsection{Case study 1 : Large-scale Stratiform rain event with convective cells}
+
+30.6.2020 midday ? 
+
+\begin{figure}
+	\label{fig:case1}
+	\centering
+	\subfigure[Prediction mean and uncertainty]{\missingfigure[figwidth=6.5cm, figheight=14cm]{Case 1 mean,std}}
+	\subfigure[Exceedance probabilities]{\missingfigure[figwidth=6.5cm, figheight=14cm]{Case 1 mean,std}}
+	\caption{case 1}
+\end{figure}
+
 \subsection{Case study 2 : Rapidly evolving convective rain event}
+
+15.8.2021 afternoon
+
+\begin{figure}
+	\label{fig:case2}
+	\centering
+	\subfigure[Prediction mean and uncertainty]{\missingfigure[figwidth=6.5cm, figheight=14cm]{Case 1 mean,std}}
+	\subfigure[Exceedance probabilities]{\missingfigure[figwidth=6.5cm, figheight=14cm]{Case 1 mean,std}}
+	\caption{case 2}
+\end{figure}
 
 \section{Deterministic prediction skill (Metrics)}
 
+\begin{figure}
+	\label{fig:cont-metrics}
+	\centering
+	\subfigure[MAE]{
+		\missingfigure[figwidth=6cm, figheight=5cm]{}
+	}
+	\subfigure[ME]{
+		\missingfigure[figwidth=6cm, figheight=5cm]{}
+	}
+	\caption{Continuous Metrics}
+\end{figure}
+
+\pagebreak
+
+\begin{figure}
+	\label{fig:cat-metrics}
+	\centering
+	\missingfigure[figwidth=14cm, figheight=12cm]{For 0.5, 5.0, 20.0 mm/h FAR POD CSI ETS}
+	\caption{cat metrics}
+\end{figure}
+
+
+\begin{figure}
+	\label{fig:fss}
+	\centering
+	\subfigure[0.5 mm/h]{
+		\missingfigure[figwidth=4.2cm, figheight=5cm]{}
+	}
+	\subfigure[5.0 mm/h]{
+		\missingfigure[figwidth=4.2cm, figheight=5cm]{}
+	}
+	\subfigure[20.0 mm/h]{
+		\missingfigure[figwidth=4.2cm, figheight=5cm]{}
+	}
+	\caption{FSS}
+\end{figure}
+
+\begin{figure}
+	\label{fig:rapsd}
+	\centering
+	\subfigure[15 min]{
+	\missingfigure[figwidth=4.2cm, figheight=5cm]{}
+}
+	\subfigure[60 min]{
+		\missingfigure[figwidth=4.2cm, figheight=5cm]{}
+	}
+	\subfigure[180 min]{
+		\missingfigure[figwidth=4.2cm, figheight=5cm]{}
+	}
+	\caption{rapsd}
+\end{figure}
+
+\pagebreak
 \section{Probabilistic prediction skill (Metrics)}
 
-\section{Uncertainty estimation}
-\subsection{Uncertainties against leadtime}
-\subsection{Uncertainties against rainfall intensity}
-\subsection{Epistemic uncertainty against training parameters}
+\begin{figure}
+	\label{fig:crps}
+	
+	\missingfigure[figwidth=4cm, figheight=4cm]{CRPS}
+	\caption{CRPS}
+\end{figure}
 
+text
 
+\begin{figure}
+	\label{fig:prob-metrics}
+	
+	\caption{roc}
+\end{figure}
+\missingfigure[figwidth=12cm, figheight=12cm]{ROC curves, reliability diagrams  at 0.5, 5.0, 20.0 mm/h and 1h}
+
+\missingfigure[figwidth=12cm, figheight=6cm]{rankhist at 1h for all 3 models, in 3 subfigures side-by-side}
+
+\missingfigure[figwidth=12cm, figheight=8cm]{Area under the curve for all three models as a function of leadtime (15min, 1h, 2h) and threshold, in one or 2 pics...}
  
