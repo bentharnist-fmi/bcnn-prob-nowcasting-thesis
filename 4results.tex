@@ -13,46 +13,43 @@
 \begin{figure}[ht]
 	\label{fig:bcnn-candidates}
 	\centering
-	\missingfigure[figwidth=14cm, figheight=8cm]{Plot showing how different priors with weighting affect an example nowcast}
-	\caption{Plot showing how different priors with weighting affect an example nowcast}
+	\missingfigure[figwidth=14cm, figheight=8cm]{Plot showing how different priors affect mean and standard deviation of weights}
+	\caption{Priors and weight distributions}
 \end{figure}
 
 \section{Case studies for nowcasts}
 \subsection{Case study 1 : Large-scale Stratiform rain event with convective cells}
 
-30.6.2020 midday ? 
+%30.6.2020 midday ? 
 
 \begin{figure}
 	\label{fig:case1}
 	\centering
-	\subfigure[Prediction mean and uncertainty]{\missingfigure[figwidth=6.5cm, figheight=14cm]{Case 1 mean,std}}
-	\subfigure[Exceedance probabilities]{\missingfigure[figwidth=6.5cm, figheight=14cm]{Case 1 mean,std}}
-	\caption{case 1}
+	\hspace*{-3.5cm}
+	\includegraphics[width=1.4\textwidth]{images/cases/2019-05-25 13:00:00_bcnn_p2_lt5_lt5_15_30_60}
+	\caption{case 1 2019-05-25 13:00:00}
 \end{figure}
 
 \subsection{Case study 2 : Rapidly evolving convective rain event}
 
-15.8.2021 afternoon
-
+%15.8.2021 afternoon
 \begin{figure}
-	\label{fig:case2}
+	\label{fig:case2_bcnn_lt5}
 	\centering
-	\subfigure[Prediction mean and uncertainty]{\missingfigure[figwidth=6.5cm, figheight=14cm]{Case 1 mean,std}}
-	\subfigure[Exceedance probabilities]{\missingfigure[figwidth=6.5cm, figheight=14cm]{Case 1 mean,std}}
-	\caption{case 2}
+	\hspace*{-1.5cm}
+	\includegraphics[width=1.2\textwidth]{images/cases/2021-05-18 21:00:00_bcnn_p2_lt5_lt5_15_30_60}
+	\caption{case 2 2021-05-18 21:00:00}
 \end{figure}
+
 
 \section{Deterministic prediction skill (Metrics)}
 
-\begin{figure}
+\begin{figure}[ht]
 	\label{fig:cont-metrics}
 	\centering
-	\subfigure[MAE]{
-		\missingfigure[figwidth=6cm, figheight=5cm]{}
-	}
-	\subfigure[ME]{
-		\missingfigure[figwidth=6cm, figheight=5cm]{}
-	}
+	\subfloat[MAE]{\includegraphics[width=0.5\textwidth]{images/metrics/ALL_MAE}}%
+	\subfloat[ME]{\includegraphics[width=0.5\textwidth]{images/metrics/ALL_ME}}%
+
 	\caption{Continuous Metrics}
 \end{figure}
 
@@ -61,39 +58,45 @@
 \begin{figure}
 	\label{fig:cat-metrics}
 	\centering
-	\missingfigure[figwidth=14cm, figheight=12cm]{For 0.5, 5.0, 20.0 mm/h FAR POD CSI ETS}
-	\caption{cat metrics}
+	\subfloat[ETS 0.5 mm/h]{\includegraphics[width=0.35\textwidth]{images/metrics/ALL_ETS_0_5}}%
+	\subfloat[ETS 5.0 mm/h]{\includegraphics[width=0.35\textwidth]{images/metrics/ALL_ETS_5_0}}%
+	\subfloat[ETS 20.0 mm/h]{\includegraphics[width=0.35\textwidth]{images/metrics/ALL_ETS_20_0}}%
+	
+	
+	
+	\subfloat[FAR 0.5 mm/h]{\includegraphics[width=0.35\textwidth]{images/metrics/ALL_FAR_0_5}}%
+	\subfloat[FAR 5.0 mm/h]{\includegraphics[width=0.35\textwidth]{images/metrics/ALL_FAR_5_0}}%
+	\subfloat[FAR 20.0 mm/h]{\includegraphics[width=0.35\textwidth]{images/metrics/ALL_FAR_20_0}}%
+	
+	\subfloat[POD 0.5 mm/h]{\includegraphics[width=0.35\textwidth]{images/metrics/ALL_POD_0_5}}%
+	\subfloat[POD 5.0 mm/h]{\includegraphics[width=0.35\textwidth]{images/metrics/ALL_POD_5_0}}%
+	\subfloat[POD 20.0 mm/h]{\includegraphics[width=0.35\textwidth]{images/metrics/ALL_POD_20_0}}%
+	\caption{Categorical metrics}
+	
 \end{figure}
 
 
-\begin{figure}
-	\label{fig:fss}
-	\centering
-	\subfigure[0.5 mm/h]{
-		\missingfigure[figwidth=4.2cm, figheight=5cm]{}
-	}
-	\subfigure[5.0 mm/h]{
-		\missingfigure[figwidth=4.2cm, figheight=5cm]{}
-	}
-	\subfigure[20.0 mm/h]{
-		\missingfigure[figwidth=4.2cm, figheight=5cm]{}
-	}
-	\caption{FSS}
+\begin{figure}[ht]
+	\label{fig:fss16}
+	\subfloat[0.5 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_FSS_8_0_5}}%
+	\subfloat[5.0 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_FSS_8_5_0}}%
+	\subfloat[20.0 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_FSS_8_20_0}}%
+	\caption{FSS scores (16km)}
 \end{figure}
 
 \begin{figure}
 	\label{fig:rapsd}
 	\centering
-	\subfigure[15 min]{
-	\missingfigure[figwidth=4.2cm, figheight=5cm]{}
+	\subfloat[15 min]{
+	\includegraphics[width=0.33\textwidth]{images/metrics/ALL_15min_RAPSD}
 }
-	\subfigure[60 min]{
-		\missingfigure[figwidth=4.2cm, figheight=5cm]{}
+	\subfloat[60 min]{
+		\includegraphics[width=0.33\textwidth]{images/metrics/ALL_60min_RAPSD}
 	}
-	\subfigure[180 min]{
-		\missingfigure[figwidth=4.2cm, figheight=5cm]{}
+	\subfloat[120 min]{
+		\includegraphics[width=0.33\textwidth]{images/metrics/ALL_120min_RAPSD}
 	}
-	\caption{rapsd}
+	\caption{RAPSD}
 \end{figure}
 
 \pagebreak
@@ -101,8 +104,8 @@
 
 \begin{figure}
 	\label{fig:crps}
-	
-	\missingfigure[figwidth=4cm, figheight=4cm]{CRPS}
+	\centering
+	\includegraphics[width=0.6\linewidth]{images/metrics/ALL_CRPS}
 	\caption{CRPS}
 \end{figure}
 
@@ -110,12 +113,41 @@ text
 
 \begin{figure}
 	\label{fig:prob-metrics}
+	\subfloat[ROC 0.5 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_ROC_l_12_t_0.5}}%
+	\subfloat[ROC 5.0 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_ROC_l_12_t_5.0}}%
+	\subfloat[ROC 20.0 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_ROC_l_12_t_20.0}}%
 	
-	\caption{roc}
+	
+	
+	\subfloat[RELDIAG 0.5 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_RELDIAG_l_12_t_0.5}}%
+	\subfloat[RELDIAG 5.0 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_RELDIAG_l_12_t_5.0}}%
+	\subfloat[RELDIAG 20.0 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_RELDIAG_l_12_t_20.0}}%
+	\caption{ROC curves and Reliability diagrams for a one-hour forecast at different precipitation thresholds.}
 \end{figure}
-\missingfigure[figwidth=12cm, figheight=12cm]{ROC curves, reliability diagrams  at 0.5, 5.0, 20.0 mm/h and 1h}
 
-\missingfigure[figwidth=12cm, figheight=6cm]{rankhist at 1h for all 3 models, in 3 subfigures side-by-side}
 
-\missingfigure[figwidth=12cm, figheight=8cm]{Area under the curve for all three models as a function of leadtime (15min, 1h, 2h) and threshold, in one or 2 pics...}
+\begin{figure}
+	\label{fig:rh}
+	\centering
+	\subfloat[BCNN lt5]{\includegraphics[width=0.5\textwidth]{images/metrics/bcnn_p2_lt5_rankhist_l_12}}%
+	\subfloat[BCNN lt30]{\includegraphics[width=0.5\textwidth]{images/metrics/bcnn_p2_lt30_rankhist_l_12}}%
+	
+	\subfloat[BCNN lt5 new]{\includegraphics[width=0.5\textwidth]{images/metrics/bcnn_sdb_bs2_lt5_last_rankhist_l_12}}%
+	\subfloat[STEPS]{\includegraphics[width=0.5\textwidth]{images/metrics/steps_rankhist_l_12}}%
+	
+	\caption{Rank histograms for probabilistic models.}
+\end{figure}
+
+\begin{figure}
+	\label{fig:rh}
+	\centering
+	\subfloat[BCNN lt5]{\includegraphics[width=0.5\textwidth]{images/metrics/bcnn_p2_lt5_AUC}}%
+	\subfloat[BCNN lt30]{\includegraphics[width=0.5\textwidth]{images/metrics/bcnn_p2_lt30_AUC}}%
+	
+	\subfloat[BCNN lt5 new]{\includegraphics[width=0.5\textwidth]{images/metrics/bcnn_sdb_bs2_lt5_last_AUC}}%
+	\subfloat[STEPS]{\includegraphics[width=0.5\textwidth]{images/metrics/steps_AUC}}%
+	
+	\caption{ROC Area under the curves summarized for probabilistic models.}
+\end{figure}
+
  

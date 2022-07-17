@@ -180,7 +180,8 @@
 % Subfigure package allows you to use subfigures (i.e. many subfigures
 % within one figure environment). These can have different labels and
 % they are numbered automatically. Check the package documentation. 
-\usepackage{subfigure}
+\usepackage{subfig}
+\usepackage{caption}
 
 \usepackage[table,xcdraw]{xcolor}
 
@@ -425,13 +426,34 @@ Seppo Pulkkinen D.Sc.}
 % Abstract in English
 % ------------------------------------------------------------------
 \thesisabstract{english}{
-\fixme{This is an example how to use fixme: add your abstract here.} 
+
+%\begin{itemize}
+	%\item what is precipitation nowcast
+	%\item relevance and importance of nowcasting precipitation
+	% #####\item Why a neural network for this task 
+	%\item next relevance of uncertainty in this
+	%\item how to get uncertainty with NN
+	%\item What is BNN in one sentence
+	%\item Did implement BNN for this task
+	%\item Verified the developed models against existing baselines, on many aspects $\to$ ok but not great
+	%\item Found out using BNN for producing well-calibrated, accurate, reliable nowcasts is challenging
+	% ####\item Lots of moving parts and field is new
+	%\item Still, encouraging results to work on top of, esp as smoothing is not a problem: aleatoric uncertainty estimate integration is future priority
+%\end{itemize}
+
+Precipitation nowcasting refers to forecasting precipitation at timescales of dozens of minutes to a few hours, and is usually approached using models based on real-time radar images of precipitation. Now, reliably nowcasting precipitation probabilities locally is a societally important challenge, due to the danger and economic losses potentially incurred by unexpected precipitation, such as the damages caused by large hail or flash floods due to heavy localized rainfall. 
+
+In this thesis, a Convolutional Neural Network (CNN) used for nowcasting precipitation point estimates is adapted into a Bayesian Neural Network (BNN) for producing ensemble predictions and estimate precipitation probabilities. A BNN turns model parameter values into probability distributions that are estimated using bayesian inference. In this work, parameters are modeled using gaussian distributions, whose parameters are learned through Stochastic Variational Inference. The predictions are then simply formed by Monte-Carlo sampling each parameter from its distribution, inducing a predictive distribution.
+
+The developed model, titled BCNN, has its predictive skill evaluated against several baseline models using a multitude of criteria covering various aspects of the nowcasts. On some of those aspects, the model was found to perform at a skill close to or equal to baselines. However, it was also found to be challenging to produce a well-calibrated and reliable probabilistic nowcast for BCNN, owning to likely to properties of the model and problems in the training procedure. Nevertheless, BCNN provided encouraging preliminary results, paving the way to more solid attempts at probabilistic precipitation nowcasting using Bayesian Neural Networks. Particularly, a more thoughtful modeling and integration of the data-related uncertainties may make the nowcasts more reliable by making the predictive distribution less sensitive to initial conditions. 
+
+
 }
 
 % Abstract in Finnish
 % ------------------------------------------------------------------
 \thesisabstract{finnish}{
-joku
+Tiivistelmä
 }
 
 
