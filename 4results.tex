@@ -1,61 +1,130 @@
 \chapter{Results}
 \label{chapter:results}
 
-\section{Selecting the best BCNN model}
+This chapter will comprehensively present the results obtained through the experiments performed. First, the results of the model hyperparameter opitimization process are shown. Then, a nowcasting example is given for two meteorologically interesting cases for one selected model, with other versions and an existing baseline given in the appendix. Lastly, both deterministic and probabilistic performance of the model variants against baseline is presented. 
 
-\begin{figure}[h]
+\section{BCNN Hyperparameter Optimization}
+
+Gaussian NLL loss data uncertainty parameter $\sigma$ was chosen to be $1e^{-4}$ amongst choices of $1e^{-2}$, $1e^{-3}$, and $1e^{-4}$. As gaussian NLL loss varies in magnitude when varying $\sigma$, the choice was done using by observing the ETS skill score at different thresholds on leadtimes from 5 to 30 minutes on a deterministic RainNet, with the scores depicted in Figure \ref{fig:sigma_selection}. Smaller $\sigma$ values appear to lead to sharper forecasts, while bigger ones to blurrier forecasts.
+
+\begin{figure}[H]
+	\centering
+	\subfloat[Prior choice]{\includegraphics[width=0.33\linewidth]{images/model_choice/Prior_choice}}
+	\subfloat[KL weighting choice]{\includegraphics[width=0.33\linewidth]{images/model_choice/KL_weight_choice}}
+	\subfloat[lt5 vs lt30]{\includegraphics[width=0.33\linewidth]{images/model_choice/t3_training}}
+	\caption{The validation set Gaussian NLL loss of different BCNN candidates against total training time, highlighting the model selection process.}
 	\label{fig:convergence-bcnn}
-	\centering
-	\missingfigure[figwidth=12cm, figheight=8cm]{Plot showing convergence of different BCNN highlighting model selection process}
-	\caption{Plot showing convergence of different BCNN highlighting model selection process}
-\end{figure}
-
-\begin{figure}[ht]
-	\label{fig:bcnn-candidates}
-	\centering
-	\missingfigure[figwidth=14cm, figheight=8cm]{Plot showing how different priors affect mean and standard deviation of weights}
-	\caption{Priors and weight distributions}
-\end{figure}
-
-\section{Case studies for nowcasts}
-\subsection{Case study 1 : Large-scale Stratiform rain event with convective cells}
-
-%30.6.2020 midday ? 
-
-\begin{figure}
-	\label{fig:case1}
-	\centering
-	\hspace*{-3.5cm}
-	\includegraphics[width=1.4\textwidth]{images/cases/2019-05-25 13:00:00_bcnn_p2_lt5_lt5_15_30_60}
-	\caption{case 1 2019-05-25 13:00:00}
-\end{figure}
-
-\subsection{Case study 2 : Rapidly evolving convective rain event}
-
-%15.8.2021 afternoon
-\begin{figure}
-	\label{fig:case2_bcnn_lt5}
-	\centering
-	\hspace*{-1.5cm}
-	\includegraphics[width=1.2\textwidth]{images/cases/2021-05-18 21:00:00_bcnn_p2_lt5_lt5_15_30_60}
-	\caption{case 2 2021-05-18 21:00:00}
-\end{figure}
-
-
-\section{Deterministic prediction skill (Metrics)}
-
-\begin{figure}[ht]
-	\label{fig:cont-metrics}
-	\centering
-	\subfloat[MAE]{\includegraphics[width=0.5\textwidth]{images/metrics/ALL_MAE}}%
-	\subfloat[ME]{\includegraphics[width=0.5\textwidth]{images/metrics/ALL_ME}}%
-
-	\caption{Continuous Metrics}
 \end{figure}
 
 \pagebreak
 
-\begin{figure}
+The first hyperparameter to be optimized for the Bayesian CNN is the prior. Here, it was chosen based on validation Gaussian NLL loss at model convergence. To give an idea about the natural distribution of network parameters under no regularizing prior, the parameter distribution for the deterministic RainNet with $\sigma = 1e^{-4}$ is shown in Figure \ref{fig:rn-weight}. distribution is centered at 0 and has high kurtosis, mostly containing parameter values between  $-0.2$ and $0.2$. 
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth]{images/weight/bcnn_rn_t1_lt5}
+	\caption{RainNet (lt5 with $\sigma = 1e^{-4}$) parameter value distribution after training. Histogram with 100 bins.}
+	\label{fig:rn-weight}
+\end{figure}
+
+Four priors were used as candidates based on knowledge of the "natural" parameter distribution. Two are Gaussian $\sim \mathcal{N}(0,1e^{-1})$ (1) and $\sim \mathcal{N}(0,1e^{-3})$ (2); and two are Gaussian Scale Mixtures with $\sigma_1,\sigma_2 = 1e^{-1}, 1e^{-3}$ (3) and $\sigma_1,\sigma_2 = 3e^{-1}, 3e^{-2}$ (4). Prior (1) serves as a weak prior, allowing most "natural" parameter values. Prior (2) on the other hand is much stricter, restricting the range of possible values to be much smaller than it would be without it. Prior (3) mixes (1) and (2) to try to figure out if the approach of scale mixture has benefits. Prior (4) finally is based on the observation that the empirical distribution of deterministic RainNets is relatively close the PDF of this prior, making it interesting to look at whether using it results in performance improvements.
+
+The results of the optimization are shown in Figure \ref{fig:convergence-bcnn} (a). Here the KL-weighting scheme is set to equal weighting and the likelihood $\sigma = 1e^{-4}$. It is shown that that best performance is achieved by prior (4), making it the choice to be used in later experiments. The weaker prior (1) is slower to converge but achieves relatively good asymptotic performance, while the stricter prior (2) gives decent results more quickly but has trouble converging to low loss values. This was substantiated by prior (2) making blurrier forecasts. Prior (3) behaved as a middle-ground between priors (1) and (2). It benefited from the same fast initial convergence as prior (2) but achieved asymptotic performance somewhere between the two. 
+
+\begin{figure}[H]
+	\centering
+	
+
+	\subfloat[Gaussian prior $\sim \mathcal{N}(0,1e^{-1})$]{\includegraphics[width=0.5\linewidth]{images/weight/bcnn_t2}}
+	\subfloat[Gaussian prior $\sim \mathcal{N}(0,1e^{-3})$]{\includegraphics[width=0.5\linewidth]{images/weight/bcnn_t2_g_e-3}}
+	
+
+	\subfloat[Gaussian Scale Mixture Prior:\\ $\sigma_1,\sigma_2 = 1e^{-1}, 1e^{-3}$ ]{\includegraphics[width=0.5\linewidth]{images/weight/bcnn_t2_gsm_big_diff_lt5}}
+	\subfloat[Gaussian Scale Mixture Prior:\\ $\sigma_1,\sigma_2 = 3e^{-1}, 3e^{-2}$]{\includegraphics[width=0.5\linewidth]{images/weight/bcnn_t2_gsm_small_diff_lt5}}
+	
+	\caption{The relation of the initial prior distribution chosen to the final  parameter posterior distributions across the network. $\mu$ histograms describe the parameter mean distributions, whereas $\sigma$ distributions describe the distribution of their standard deviations. The KL-weighting scheme here is set to equal weighting.}
+	\label{fig:bcnn-prior-weights}
+\end{figure}
+
+The effect of the prior on the parameter mean and STD distributions is portrayed in Figure \ref{fig:bcnn-prior-weights}. It is seen that for all priors except (2), STD distributions end up tilted towards bigger values than the initial scale $1e^{-3}$, pointing to a possibility that it was way too small and that combined with a small learning rate ($1e^{-4}$), there wasn't just enough time for the them to grow where they should have. Concerning means, it is observed that the breadth of the posterior mean distribution is closely associated to the prior distribution breadth. With prior (2), it is seen that, most means are actually very close to 0 and while scales are close to their initial values, the biggest deviations tend to lower them, which can be intuitively understood as the prior scale is the same as the initial posterior scale.  
+
+With the prior chosen, the next hyperparameter to be optimized is the KL weighting scheme. The results are depicted in Figure \ref{fig:convergence-bcnn}(b). Best performance is observed with the Blundell weighting scheme which was chosen for further experiments, with close performance achieved using equal weighting. Although relatively close in performance, the Epoch weighting scheme did not deliver in the end, although it showed promising results in preliminary experiments, where the Blundell scheme did not work. The effect of the KL weighting scheme on the weight distribution is shown in Figure \ref{fig:bcnn-training-weights}. Here, the Blundell scheme differs considerably compared to others in terms of scale distribution, as they are more closely centered around the initial value and the shift is directed towards smaller values. 
+
+Finally training times for lt5 and lt30 variants are compared in Figure \ref{fig:convergence-bcnn}(c). The training is shown for the model BCNN lt5 V2, which is an additional experiment not used for other verification. It is seen that continuing the training with 30 minute leadtime (lt30: 6 predictions) requires requires much more computational resources than simply using 5 minute leadtime (lt5: 1 prediction), which is only worth if skill is improved as a result. In the current example, using a likelihood $\sigma = 2e^{-2}$, likelihood loss is improved with lt30, but the opposite is found using likelihood $\sigma = 1e^{-4}$.
+
+\section{Nowcasting Examples}
+
+Here, example nowcasts made with the model developed are shown for two distinct events. The main three models retained for verification are The main model showcased is \texttt{BCNN lt5}, with additional models showcases in Appendix \ref{section:additional-case-studies}.  Predictive mean and uncertainty, as well as exceedance probabilities for 0.5, 5.0, and 20.0 mm/h are shown.  
+
+\subsection{Case study 1 : Rapidly Moving Mixed Stratiform and Convective Rain Event}
+
+The predictive mean and uncertainty for \texttt{BCNN lt5} on Case 1 is shown in Figure \ref{fig:bcnn_mean_case1}. It is observed that mean predictions get expectedly increasingly smoothed out with time, and that predictive uncertainty is highly correlated with predicted mean rainrate. Additionally, predictive uncertainty increases over time, achieving top values exceeding 50 mm/h in areas of predicted heavy rain at one-hour leadtimes. It is seen that advection and the overall movement of the front is well-modeled, while smaller-scale details even if corresponding to medium or heavy rain, are quickly lost. 
+
+Smoothing out of predictions has an important effect of reducing model capacity to predict high rainrates, which are often concentrated over small areas. This is an especially important effect because smoothing does not originate simply from averaging, but is also present in individual samples, due to the combined effect of the loss function and of the iterative prediction scheme, as described in section \ref{section:rainnet}. 
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{images/cases/bcnn_mean_case1}
+	\caption{Predictive mean and uncertainty (two standard deviations) for Case 1 on the 25th of May 2019 starting at 1PM for the \texttt{BCNN lt5} model.}
+	\label{fig:bcnn_mean_case1}
+\end{figure}
+
+Exceedance probabilities for \texttt{BCNN lt5} on Case 1 are shown in Figure \ref{fig:bcnn_prob_case1}. Both for this model and in general, it is seen that exceedance probabilities are lower for high leadtimes and high thresholds. In the case of this model, all exceedance probabilities seem to be smoothed over time, which is indicative of the uncertainty of the extent of rain being at least to some degree taken into account. It is also seen that especially at 20.0 mm/h, the predicted exceedance probability at one-hour leadtime does not always originate from current time high rainrates. This is seen from the top of the image at +5min, where a small exceedance probability is present, but disappears at further leadtimes, before reappearing independently. 
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{images/cases/bcnn_prob_case1}
+	\caption{0.5, 5.0, and 20.0 mm/h exceedance probabilities for Case 1 on the 25th of May 2019 starting at 1PM for the \texttt{BCNN lt5} model.}
+	\label{fig:bcnn_prob_case1}
+\end{figure}
+
+Both in the plot of prediction mean and uncertainty, as well as in that of exceedance probabilities, it is seen that because the rain is advected towards the north, lower parts of the image can not be predicted. 
+
+\subsection{Case study 2 : Mixed Stratiform and Convective Rain Event with Spinning Motion}
+
+The predictive mean and uncertainty for \texttt{BCNN lt5} on Case 2 is shown in Figure \ref{fig:bcnn_mean_case2}. In this case, the same overall features are observed as in Case 1. Here, the spinning motion is correctly predicted and the mean rainrates are relatively close to ground truth. As in Case 1 but especially here, many small features are lost and especially small convective cell evolution is not correctly predicted. 
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{images/cases/bcnn_mean_case2}
+	\caption{Predictive mean and uncertainty (two standard deviations) case 2 2021-05-18 21:00:00}
+	\label{fig:bcnn_mean_case2}
+\end{figure}
+
+The exceedance probabilities are shown in Figure \ref{fig:bcnn_prob_case2}. Many things happening here are similar as in Case 1, but especially striking is lower exceedance probabilities at one-hour leadtime for the 0.5 mm/h threshold. Here, in many samples the spinning "arms" were lost by that time because of their thinness and the tendency of thin or small features to disappear. 
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=\textwidth]{images/cases/bcnn_prob_case2}
+	\caption{0.5, 5.0, and 20.0 mm/h exceedance probabilities for Case 2 on the 18th of May 2021 starting at 9PM for the \texttt{BCNN lt5} model.}
+	\label{fig:bcnn_prob_case2}
+\end{figure}
+
+\subsection{Additional Case Study 1 results}
+
+Case 1 prediction mean and uncertainty, as well as exceedance probabilities are respectively plotted for \texttt{BCNN lt5 new} in Figures \ref{fig:bcnn_better_mean} and \ref{fig:bcnn_better_prob}, \texttt{BCNN lt30} in Figures \ref{fig:bcnn_p2_lt30_mean} and \ref{fig:bcnn_p2_lt30_prob}, and finally STEPS in Figures \ref{fig:steps_mean} and \ref{fig:steps_prob}. For \texttt{BCNN lt5 new}, results are similar as in the \texttt{BCNN lt5} case, but exhibit a much bigger bias towards predicting strong rain, with more ensemble members predicting increasingly high rainrates. From exceedance probabilities, this can be seen as overall higher values, making the model more susceptible to predicting stronger rainrates. 
+
+For \texttt{BCNN lt30}, it can be seen from both figures that the overall skill is lower than for \texttt{lt5} cases. In particular, predictions are more smoothed out and more details are lost, hinting to the conclusion that \texttt{lt30} training did not work as expected. Here, predictive uncertainty does not increase with leadtime, and higher rainrates are often not predicted at all. However it can be seen that the network predicts consistently high exceedance probabilites, and that those are not (esp. 0.5 mm/h) smoothed out spatially with increased leadtime. 
+
+Finally, looking out at Figures of the STEPS baseline, it is easily seen that despite being a simpler model, it predicts better spatial uncertainty in future rain. However STEPS has a hard time predicting exceedance probabilities for high (esp. 20.0 mm/h) thresholds. One striking feature is also that in the case of STEPS, predictive uncertainty is more spread out than predictive mean, which is a behaviour not observed in any model developed here. 
+
+
+\section{Deterministic prediction skill (Metrics)}
+
+The following results describe the skill of ensemble means of developed models against baseline models. LINDA-P ensemble means are omitted for clarity because their skill was almost identical to LINDA-D. 
+
+\begin{figure}[H]
+	\centering
+	\subfloat[MAE]{\includegraphics[width=0.5\textwidth]{images/metrics/ALL_MAE}}%
+	\subfloat[ME]{\includegraphics[width=0.5\textwidth]{images/metrics/ALL_ME}}%
+
+	\caption{Continuous Metrics (MAE and ME) for BCNN variants and baselines, up until two-hour leadtime.}
+	\label{fig:cont-metrics}
+\end{figure}
+
+Starting off with the continuous metrics, their values are shown in Figure \ref{fig:cont-metrics}. BCNN and RainNet models have similar MAE and ME, except for \texttt{BCNN lt5} and \texttt{BCNN lt5 new} cases, where ensemble means exhibited clear bias towards too strong rainrate predictions after 30 minutes. These models shall be called "positively biased". ME was around zero for classical models and tended lower with other RainNet and BCNN models, showing bias towards too weak predictions ("negatively biased"), mainly due to smoothing. Still, BCNN and RainNet gave mostly clearly superior MAE compared to classical models, which is understandable as Gaussian NLL is a loss function part of the same class as MAE, which tends to optimize for minimizing pixel-per-pixel deviations and by extension MAE. 
+
+\begin{figure}[H]
 	\label{fig:cat-metrics}
 	\centering
 	\subfloat[ETS 0.5 mm/h]{\includegraphics[width=0.35\textwidth]{images/metrics/ALL_ETS_0_5}}%
@@ -71,21 +140,26 @@
 	\subfloat[POD 0.5 mm/h]{\includegraphics[width=0.35\textwidth]{images/metrics/ALL_POD_0_5}}%
 	\subfloat[POD 5.0 mm/h]{\includegraphics[width=0.35\textwidth]{images/metrics/ALL_POD_5_0}}%
 	\subfloat[POD 20.0 mm/h]{\includegraphics[width=0.35\textwidth]{images/metrics/ALL_POD_20_0}}%
-	\caption{Categorical metrics}
-	
+	\caption{Categorical metrics (ETS. FAR, and POD) for BCNN variants and baselines, up until two-hour leadtime at thresholds of 0.5, 5.0, and 20.0 mm/h.}
 \end{figure}
 
+POD, FAR, and ETS metric values are shown in Figure \ref{fig:cat-metrics}. For these metrics, the strongest overall result among developed models is achieved by \texttt{BCNN lt5 new}. This is not unexpected, as positively biased models tend to perform better with categorical metrics than negatively biased. For POD, a resurgence at further leadtimes is seen in \texttt{BCNN lt5} and \texttt{BCNN lt5 new} models, because of the phenomenon of "exploding rainrates".  In other cases, POD is better for classical baselines than CNN based models, when negatively biased. Accompanying high POD of "exploding rainrates" of positively biased models is a very high FAR, demonstrating that this high POD is not necessarily indicative of skill. FAR is interestingly worse for extrapolation based baselines than CNN based models at 0.5 mm/h threshold, a phenomenon that disappears at higher thresholds.
 
-\begin{figure}[ht]
-	\label{fig:fss16}
+ ETS summarizes the categorical skill of the models. Especially at 5.0 and 20.0 mm/h, LINDA-D reigns king of predictive skill, while CNN based models and STEPS lag far behind. Overall, no conclusion can be made about whether the bayesian extension improved the categorical predictive skill, as the the only skillful outlier \texttt{BCNN lt5 new} didn't have a RainNet model with a corresponding training routine to compare to. CSI scores are shown in Figure \ref{fig:csi}, but they do not differ much from ETS. 
+
+\begin{figure}[H]
 	\subfloat[0.5 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_FSS_8_0_5}}%
 	\subfloat[5.0 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_FSS_8_5_0}}%
 	\subfloat[20.0 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_FSS_8_20_0}}%
-	\caption{FSS scores (16km)}
+	\caption{FSS metric at a 16km scale for BCNN variants and baselines, up until two-hour leadtime at thresholds of 0.5, 5.0, and 20.0 mm/h.}
+	\label{fig:fss16}
 \end{figure}
 
-\begin{figure}
-	\label{fig:rapsd}
+The FSS metric results at a 16km spatial scale for the thresholds of interest are shown in Figure \ref{fig:fss16}. Here, it is found that the difference between Extrapolation based deterministic models and others is strikingly big, with the former being much more skillful at that level of detail. FSS at a scale of 4km is shown in Figure \ref{fig:fss4}, but the results do not differ much from ETS and CSI at the original scale of two kilometers, as the change is only two-fold. 
+
+RAPSD is shown in Figure \ref{fig:rapsd} for leadtimes of 15, 60, and 120 minutes. As expected, Extrapolation nowcast which preserves details has a PSD very close to observations, while other models show drop in power at short wavelengths, with steeper drops at further leadtime. Interestingly, this drop in power is bigger at 60 minutes than 120 minutes, which might have something to do with the OR-masking of NaN values, reducing significantly the area used for calculation at two hours. The biggest drops in small-scale details are experienced by STEPS and \texttt{BCNN lt30} as well as \texttt{RainNet lt30} models. All \texttt{lt5} CNN models experienced less loss in details compared to \texttt{lt30} models. It is difficult to conclude whether taking ensemble means had any significant effect on the loss of small-scale details of CNN approaches without looking at individual ensemble members and ditching the OR-masking.
+
+\begin{figure}[H]
 	\centering
 	\subfloat[15 min]{
 	\includegraphics[width=0.33\textwidth]{images/metrics/ALL_15min_RAPSD}
@@ -96,38 +170,24 @@
 	\subfloat[120 min]{
 		\includegraphics[width=0.33\textwidth]{images/metrics/ALL_120min_RAPSD}
 	}
-	\caption{RAPSD}
+	\caption{Radially-averaged power spectral density (RAPSD) for BCNN variants and baselines, at leadtimes of 15 minutes, one hour, and two hours.}
+	\label{fig:rapsd}
 \end{figure}
 
-\pagebreak
 \section{Probabilistic prediction skill (Metrics)}
 
-\begin{figure}
-	\label{fig:crps}
+The following section shows probabilistic prediction skill assessment results of BCNN models against STEPS and LINDA-P baselines.
+
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.6\linewidth]{images/metrics/ALL_CRPS}
-	\caption{CRPS}
+	\caption{CRPS metric for all ensemble models at leadtimes up until one hour.}
+	\label{fig:crps}
 \end{figure}
 
-text
+The continuously ranked probability score for all ensemble models is shown in Figure \ref{fig:crps} for leadtimes up until one hour. Initially the best CRPS is achieved by LINDA-P, but after 10 minutes STEPS becomes the best. BCNN models consisently perform worse than STEPS, and only LINDA-P gets worse than \texttt{BCNN lt5} and \texttt{BCNN lt30} after 45 minutes.
 
-\begin{figure}
-	\label{fig:prob-metrics}
-	\subfloat[ROC 0.5 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_ROC_l_12_t_0.5}}%
-	\subfloat[ROC 5.0 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_ROC_l_12_t_5.0}}%
-	\subfloat[ROC 20.0 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_ROC_l_12_t_20.0}}%
-	
-	
-	
-	\subfloat[RELDIAG 0.5 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_RELDIAG_l_12_t_0.5}}%
-	\subfloat[RELDIAG 5.0 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_RELDIAG_l_12_t_5.0}}%
-	\subfloat[RELDIAG 20.0 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_RELDIAG_l_12_t_20.0}}%
-	\caption{ROC curves and Reliability diagrams for a one-hour forecast at different precipitation thresholds.}
-\end{figure}
-
-
-\begin{figure}
-	\label{fig:rh}
+\begin{figure}[H]
 	\centering
 	\subfloat[BCNN lt5]{\includegraphics[width=0.5\textwidth]{images/metrics/bcnn_p2_lt5_rankhist_l_12}}%
 	\subfloat[BCNN lt30]{\includegraphics[width=0.5\textwidth]{images/metrics/bcnn_p2_lt30_rankhist_l_12}}%
@@ -135,11 +195,26 @@ text
 	\subfloat[BCNN lt5 new]{\includegraphics[width=0.5\textwidth]{images/metrics/bcnn_sdb_bs2_lt5_last_rankhist_l_12}}%
 	\subfloat[STEPS]{\includegraphics[width=0.5\textwidth]{images/metrics/steps_rankhist_l_12}}%
 	
-	\caption{Rank histograms for probabilistic models.}
+	\caption{Rank histograms for BCNN and STEPS model nowcasts at a one-hour leadtime, for precipitation events exceeding 0.1 mm/h.}
+	\label{fig:rh}
 \end{figure}
 
-\begin{figure}
-	\label{fig:rh}
+Rank histograms for BCNN and STEPS model nowcasts at one hour are shown in Figure \ref{fig:rh}, and the corresponding plot for LINDA-P is depicted in Figure \ref{fig:rankhist_linda}. It is seen that LINDA-P and especially STEPS have very flat histograms, which is indicative of well-calibrated uncertainty, i.e. no under- or over-estimation of true uncertainty is made, as observations are ranked with close to equal probability amongst ensemble members. Only a slight "negative bias" towards weak rain forecasts can be detected by observing that the rightmost bin is slightly over-represented. That is cases where the observation had the highest rainrate compared to all ensemble members. 
+
+Compared to those baselines, BCNN models had all strongly convex histograms, severely under-estimating the true uncertainty of data. Furthermore, BCNN models had the rightmost bin over-represented too, with 40 to 50\% of the time, the observation being the highest rainrate. Additionally, \texttt{BCNN lt5 new} and \texttt{BCNN lt30} had around 20\% of observations where the observation was smaller than any ensemble member, hinting to many cases where the network is vastly over-confident about its high rainrate prediction. 
+
+\begin{figure}[H]
+	\subfloat[ROC 0.5 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_ROC_l_12_t_0.5}}%
+	\subfloat[ROC 5.0 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_ROC_l_12_t_5.0}}%
+	\subfloat[ROC 20.0 mm/h]{\includegraphics[width=0.33\textwidth]{images/metrics/ALL_ROC_l_12_t_20.0}}%
+	
+	\caption{ROC curves for one-hour exceedance probabilities at 0.5, 5.0, and 20.0 mm/h precipitation thresholds.}
+	\label{fig:roc}
+\end{figure}
+
+The ROC curve for models at one hour for exceedance probabilities at thresholds of interest is shown in Figure \ref{fig:roc}, and an overview of discrimination power as a function of leadtime and threshold proxied by the ROC area under the curve (AUC) for BCNN models and STEPS is shown in Figure \ref{fig:roc_auc}. From the ROC curves, it is seen that best discriminative power is achieved by LINDA-P, overwhelmingly so at high thresholds. Second was STEPS, followed by the three BCNN models lagging far behind. From the AUC plots, it is visible that for all models, leadtime exhibits a stronger effect on discrimination power for higher thresholds. The AUC plots come to confirm that the discrimination power difference between models derived from ROC curves is consistent varying leadtime and threshold, with perhaps the exception of \texttt{BCNN lt5} compared to \texttt{BCNN lt5 new} performing better on higher, but worse on lower thresholds.
+
+\begin{figure}[ht]
 	\centering
 	\subfloat[BCNN lt5]{\includegraphics[width=0.5\textwidth]{images/metrics/bcnn_p2_lt5_AUC}}%
 	\subfloat[BCNN lt30]{\includegraphics[width=0.5\textwidth]{images/metrics/bcnn_p2_lt30_AUC}}%
@@ -147,7 +222,17 @@ text
 	\subfloat[BCNN lt5 new]{\includegraphics[width=0.5\textwidth]{images/metrics/bcnn_sdb_bs2_lt5_last_AUC}}%
 	\subfloat[STEPS]{\includegraphics[width=0.5\textwidth]{images/metrics/steps_AUC}}%
 	
-	\caption{ROC Area under the curves summarized for probabilistic models.}
+	\caption{ROC Area under the curves summarized for BCNN and STEPS models. The dashed lines correspond to a random forecasts, and grayed out areas to results worse than that of a random (no skill) forecast.}
+	\label{fig:roc_auc}
 \end{figure}
 
+Lastly, the reliability diagram accompanied by its sharpness histogram for each model, at the same precipitation thresholds at a one-hour leadtime is shown in Figure \ref{fig:reldiag}. Starting with the histogram, the sharpness of nowcasts seems to generally increase with the threshold. At 0.5 mm/h, all models have a relatively similar U-shaped sharpness histogram, indicative of moderate sharpness, with BCNN models perhaps a little sharper. Higher thresholds see all models adopt distributions of exceedance probabilities skewed towards smaller values. Generally it seems to be that it is at least one order of magnitude less common to have occurrences of forecast probabilities close to 0.5 for BCNN models compared to LINDA-P and STEPS.
+
+Now turning towards the reliability diagram, it is clear that nowcasts get less reliable for higher thresholds. One will notice that LINDA-P and STEPS both stay both much closer to the black dashed line, indicator of perfect reliability. BCNN models tend here to assign high forecast probabilities to events that will really take place less often, and conversely assign too low forecast probabilities to events that will take place more often in practice. This expresses a lack of reliability. Furthermore, one can see that the reliability diagram of BCNN models gets non monotonous at 20.0 mm/h. This is due to too small sample sizes in the middle probabilities.
+
  
+ \begin{figure}[H]
+ 	\includegraphics[width=\linewidth]{images/metrics/RELDIAG_together}
+ 	\caption{Reliability diagrams and sharpness histogram for one-hour exceedance probabilities at 0.5, 5.0, and 20.0 mm/h precipitation thresholds.}
+ 	\label{fig:reldiag}
+ \end{figure}

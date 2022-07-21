@@ -18,10 +18,9 @@ Intermediate results are saved such that predictions are saved in HDF5 archives,
 
 \begin{figure}
 	\centering
-	\label{fig:workflow}
-	%\missingfigure[figheight=8cm, figwidth=12cm]{Vizualizating the overall workflow with model training, predictions and baselines, metrics, together with used software}
 	\includegraphics[width=\textwidth]{images/workflow/workflow}
 	\caption{Overall workflow used for this work, tied with used libraries for different components.}
+	\label{fig:workflow}
 \end{figure}
 
 The deep learning models were all implemented using the PyTorch framework and the PyTorch Lightning wrapper \cite{Falcon_PyTorch_Lightning_2019}. These libraries were chosen because of the combined ease of prototyping brought by PyTorch Lightning, and the maturity and flexibility of the parent framework PyTorch. RainNet was ported to PyTorch following the original Tensorflow implementation by Ayzel et al. \cite{Ayzel2020RainNet}. 
@@ -68,11 +67,11 @@ R = (10^{Z / 10} / 223)^{1/1.53}
 for the current data. 
 
 \begin{figure}
-	\label{fig:domain}
 	\centering
 	%\missingfigure[figwidth=12cm, figheight=10cm]{FMI radar domain, bbox}
 	\includegraphics[scale=1.2]{images/domain/fmi_domain}
 	\caption{FMI radar domain and the chosen bounding box covering southern Finland. The three letter codes identify the radars, inner circles their worst case effective range (usu. during summer), and outer circles their best case effective range (usu. during winter). The lowest level reflectivity composite from the 30th of June 2020 at 00:05:00 is depicted on the right.}
+	\label{fig:domain}
 \end{figure} 
 
 
@@ -84,11 +83,11 @@ for the current data.
 For the implementation of a Bayesian Convolutional Network, we use as our base functional model  the same architecture as for RainNet by Ayzel et al. \cite{ayzel_rainnet_nodate}, which is itself heavily inspired by U-Net and SegNet model families. RainNet just like those families adopts a U-shaped encoder-decoder architecture. The encoder is composed of successive pooling and convolutional layers, reducing image sizes passed to the next layer while increasing the number of filters. The decoder part adopts a mirror archictecture of successive upsampling and convolutional layers, increasing the image size while reducing the number of filters. There is 5 levels in the encoder-decoder structure, just like in SegNet. Additionally, there are skip connections from the encoder to the decoder branch, carrying higher-level filter maps through, just like in U-Net. This is done in order not to lose smaller spatial scale details with pooling.  
 
 \begin{figure}[h]
-	\label{fig:rainnet}
 	%\missingfigure[figwidth=12cm, figheight=8cm]{RainNet architecture diagram with vector graphics}
 	\centering
 	\includegraphics[scale=1]{images/rainnet_arch/rainnet_arch}
 	\caption{The functional CNN architecture used for this work, Identical to that of RainNet from Ayzel et al. \cite{ayzel_rainnet_nodate}. \texttt{concat} refers to the concatenation of feature maps along the channel dimension.}
+	\label{fig:rainnet}
 \end{figure}
 
 The convolutional filters have a filter size of 3, with padding designed to preserve image shape, and a stride of one. Finally, the last convolutional layer in the network has a filter size of 1 with no padding, and it is followed by a linear activation output layer, i.e. no (nonlinear) activation function. The network does not contain any fully-connected layers, and in total consists of 31.4M parameters. RainNet works by feeding in 4 consecutive radar images, with the physically speaking temporal dimension represented in the channel dimension of the tensor. As the output of the network, we get one output radar image, representing the next predicted frame. In order to make predictions at further leadtimes, the predictions are fed back to the inputs one-by-one in an iterative process. 
@@ -143,7 +142,9 @@ Multiple procedures for weighting the complexity cost against the likelihood cos
 			\label{fig:training}
 			%\missingfigure[figwidth=14cm, figheight=5cm]{Training diagram}
 			\includegraphics[scale=1]{images/training_diagram/training_diagram.pdf}
-		}
+		}%
+	
+	
 		\subfloat[Inference procedure for generating ensemble nowcasts with the BCNN.\textbf{Same comments as above...}]{
 			\label{fig:inference}
 			\includegraphics[scale=1]{images/inference_diagram/inference_diagram.pdf}
@@ -295,7 +296,7 @@ A rank histogram is a measure that from the rank of the radar observation among 
 
 ROC curves \cite{mason1982model} are a verification method assessing the ability of a forecast to discern between positive and negative events, that is in the present case pixels with or without exceedance of a particular rainrate threshold. This is accomplished by keeping track of false alarm rates (FAR) against probability of detection (POD) of an event. Probabilities are divided into a certain number of bins over which corresponding FAR are averaged, and a curve is formed. A random forecast corresponding to no skill corresponds to a line, and an increasing area under the curve indicates better discernment ability. 
 
-A reliability diagram presents observed relative frequencies of events (rainrates exceeding a certain threshold value) against their forecast probabilities. When these two values are close to each others, the forecast is said to be reliable. This means that a skillful forecast is defined by being close to the line of equality to observed relative frequencies for all forecast probabilities output by the model. 
+A reliability diagram presents observed relative frequencies of events (rainrates exceeding a certain threshold value) against their average forecast probabilities. When these two values are close to each others, the forecast is said to be reliable. This means that a reliable forecast is defined as having its reliability diagram close to the straight line corresponding to observed relative frequencies and forecast probabilities output by the model being equal. In practice, reliability diagrams are built by dividing forecast probabilities into bins with associated observed relative frequencies. The diagram is often accompanied by a histogram of event counts in those bins called the sharpness histogram. A model's forecasts can be said to be sharp if most predictions are close to zero or one probabilities. Sharpness can be seen as a measure of the "decisiveness" of a forecast.
 
 ROC curves are conditioned on observation of an event, while reliability diagrams are conditioned on its forecast. Because of this they complement each others well in the evaluation of ensemble prediction skill. For probabilistic metrics, the same rain intensity thresholds as in deterministic metrics, namely 0.5, 1.0, 5.0, 10.0, 20.0, and 30.0 mm/h are used. CRPS is calculated for the whole 36 leadtimes covering 3 hours, while other metrics are calculated for leadtimes of 15, 30, 60, 120, and 180 minutes. 
 

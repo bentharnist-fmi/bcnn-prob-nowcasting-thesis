@@ -2,30 +2,61 @@
 \label{chapter:discussion}
 
 \section{Goodness of results}
-\section{Validity of results}
-
-Variational approximations tend to underestimate uncertainty of learned distributions. \cite{bishop2006pattern, minka_family_nodate}. This can be observed from the rank histograms of BRN as a generally concave histogram shape compared to models based on stochastic perturbations. This means that the effect of variability of ensembles being less than that of observations was most indeed most pronouced in variational models, as one might expect. 
 
 \begin{itemize}
-	\item Assumption of data uncertainty constant in HGL is questionable
-	\item also chosen ad-hoc value is questionable and might affect result quality 
-	\item 2-downsampling : lifetime of features at 2km timescales vs 1km : use of prob. nowcast to average out smallest levels and improve scores: is it justified with this avg pool?
-\end{itemize}
-\section{What could we learn from uncertainty}
-
-\begin{itemize}
-	\item sample variability seems low: perhaps because of high-freq detail loss; if details preserved such as in generative models: maybe we would need higher sample count to get sharp forecassts.
-\end{itemize}
-\section{What would have to be improved, potential problems in the study?}
-
-\begin{itemize}
-	\item Could try and pre-learn means from non-bayesian CNN to improve skill
+	\item blundell scheme more guided by data, as less time spent guided by prior, rel. to weight distrib?
+	\item lt30 train worse than expected: prelim exps, experience with RN says otherwise: what did go wrong here???
 	\item Did scheme of prelearning lt5 before going to lt30 work ?? $\to$ newest data says otherwise...
+	\item both cont, cat metrics good at the same time is hard ...
+	\item These facets unfortunately undermine the utility of BCNN as it is for probabilistic nowcasting (RH, reldiag)
+	\item here explain 
+	\item sample variability seems low: perhaps because of high-freq detail loss; if details preserved such as in generative models: maybe we would need higher sample count to get sharp forecassts.
+	\item more test needed on whether stricter prior leads to better generalization by less overfitting and possibly better uncertainty estimates.
 \end{itemize}
+
+
+
+\section{Validity of Assumptions and Experiments}
+
+\begin{itemize}
+		\item what and how hyperparam optim is done
+\end{itemize}
+
+\subsection*{SVI issues}
+
+When it comes to the Variational Inference method employed, there might have been unguarded assumptions regarding prior and posterior families chosen. In particular, the problem in question might have benefited from a more careful choice of those families based on physical constraints and known behavior of precipitation.   
+Related to this matter, it is known that Variational approximations tend to underestimate uncertainty of learned distributions. \cite{bishop2006pattern, minka_family_nodate}. However, it is hard to say if this is the whole story here when observing the rank histograms and reliability diagrams of BCNN models. As the rank histogram shape of them is generally concave compared to models based on stochastic perturbations, the variability of ensembles is indeed less than that of observations most pronoucedly in variational models, as one might expect. 
+
+Nevertheless, the magnitude of the effect leaves the possibility that some parts of the model might have been non-optimal for the task, even within the SVI framework. The reason for thinking this is that in part of preliminary experiments performed, uncertainty estimates for BCNN precursors were way more reliable than in current experiments. A posteriori, it was found that one hyperparameter that was different and left un-optimized here is the initialization value of parameter posterior scales, which here was set to $1e^{-3}$ here and $1e^{-2}$ in these preliminary experiments. Setting the parameter too high led to difficulties for the model to converge and unstable predicted rainrates, but while it was also known that setting it lower leads to initially smaller uncertainty estimates, no attention was paid while performing experiments to whether this might affect the asymptotic behavior of the estimates. Looking at Figure \ref{fig:bcnn-prior-weights}, it is seen that scales only deviate from their initial values by a factor of two to three at maximum, hinting the fact that asymptotic marginal uncertainty estimates may very well be connected to the initial scale of parameters. 
+
+\subsection*{Likelihood Cost and Uncertainty}
+
+It was also hypothesized whether the magnitude of the Gaussian NLL loss data uncertainty parameter $\sigma$ influenced the uncertainty estimates, but increasing it from $1e^{-4}$ to $2e^{-2}$ as in preliminary experiments had no effect on the estimates. 
+With regards to this data uncertainty parameter, optimizing for it using conventional RainNet was questionable, because the interactions between the complexity and likelihood terms of ELBO are not thus taken into account, and the choice is only based on deterministic skill, which is only a small part and sometimes in contradiction with other aspects of what an ensemble probabilistic model should aim for. $1e^{-4}$ is also much smaller than the realistic average uncertainty in data in the value range of interest. This uncertainty is expressed in terms of (log-transformed) rainrate (mm/h) and the data has a resolution expressed in reflectivity of 0.5 dBZ, which has for effect that the resolution of the rainrate data is dependent on rain intensity. This calls for non-constant data dependent, e.g. heteroscedastic uncertainties. Another facet of the model making the homoscedasticity assumption questionable is the iterative prediction scheme. This is because the outputs re-fed into the network will inherently have higher aleatoric uncertainty than original inputs, as model (epistemic) uncertainty of previous steps increments data uncertainty of next steps. Also, smaller-scale features often including high-intensity precipitation, have worse predictability and will suffer from higher uncertainty than large-scale features.
+
+\subsection*{Input Data}
+
+Now concerning the input data, the downsampling by a factor of two performed for computational performance reasons might have been detrimential for the validity of the verification of small-scale and especially high-intensity precipitation. There are two factors at play here. One is that because of the scale-dependence of precipitation lifetime, NN-based nowcasting model performance might not scale the same way when changing scale as extrapolation-based classical models, which might make interpreting the performance obtained at bigger scales more difficult. The other factor is that because average pooling is used for downsampling, higher rainrates get diluted, an effect exacerbated by the on average small spatial extent of intense precipitation. Hence, downsampled performance may not necessarily extrapolate to higher spatial resolutions. This is important because in the end, developed precipitation nowcasting models are usually to be used with input data having a grid resolution of 500 meters to one kilometer. 
+
+In addition to the downsampling issue, performing the train/validation/test split using six hour blocks might not have been enough to discard all harmful temporal correlations between different time-series, as input images from the end of one block are still correlated to images at the start of the next block, which is part of another split. Thus, even though the correlations are reduced, they do not disappear and the validation and test split performance is still over-estimated for Deep Learning models. A more robust split would have been using non-successive days as units.
+
+\subsection*{Verification Experiments}
+
+RAPSD results suffer from potentially spurious gain in small wavelength power at 120 minutes. This might have something to do with the OR-masking of precipitation reducing too much the area used, or it might be some other unknown effect or mistake in the calculations, which is why RAPSD results are to be taken with a grain of salt. 
+
+ROC curves of Figure \ref{fig:roc} in probabilitic verification suffer from too few probability categories, as the curves exhibit apparent discontinuity, while they should approximately follow a binormal distribution. This undermines their accuracy for determining forecast accuracy and resolution.
 
 \section{Directions for further work}
 
-Decomposition of predictive uncertainty into aleatoric and epistemic uncertainties is not performed, as it was deemed out of scope for this work. Indeed, trying to model the uncertainty the radar image inputs is a separate problem which is not so much of interest in the domain of radar-based precipitation, as so much more can be done to improve performance by ameliorating radar scan fidelity, preprocessing, and choice. Despite of this, one could still view aleatoric uncertainty as a proxy to non-predictability of precipitation given starting conditions represented by the input frames. This could in the case of the iterative models presented at least serve as a metric to quantify the uncertainty created by feeding back in previous model outputs and could potentially allow the compound aleatoric and epistemic ensemble spread to better match the true distribution of the data. 
+First and foremost, further work should aim to produce more reliable uncertainty estimates in the current framework. This could be approached by first examining the effect on initial posterior scales on sample variety. Secondly, BCNN would have to be trained and tested using non-downscaled 1km grid resolution reflectivity composites. 
+
+Despite being one very interesting research direction, decomposition of predictive uncertainty into aleatoric and epistemic uncertainties is not performed, as it was deemed out of scope for this work. Indeed, trying to model the uncertainty the radar image inputs is a separate problem which is not so much of interest in the domain of radar-based precipitation, as so much more can be done to improve performance by ameliorating radar scan fidelity, preprocessing, and choice. Despite of this, one could still view aleatoric uncertainty as a proxy to non-predictability of precipitation given starting conditions represented by the input frames. This could in the case of the iterative models presented at least serve as a metric to quantify the uncertainty created by feeding back in previous model outputs and could potentially allow the compound aleatoric and epistemic ensemble spread to better match the true distribution of the data. If modeling the uncertainty as data dependent and using heteroscedastic Gaussian likelihood, it would be interesting to take the same approach as Kendall et al. \cite{kendall_what_2017} and learn heteroscedastic uncertainties as a separate output channel. This uncertainty learning would eliminate the hairy problem of choosing a homoscedastic data uncertainty value a priori, and possibly make for more skillful probabilistic nowcasts. How the separate channel aleatoric uncertainty would be integrated with the ensembles for predictions is still an unsolved problem. 
+
+\begin{itemize}
+		\item If more time and resource: could try testing other uncertainty estimation methods to see how much it affects skill, uncertainty estimate
+		\item Could try and pre-learn means from non-bayesian CNN to improve skill
+		\item Best to try weight pruning: supported by evidence that lots of weights are around 0, if those are the same as those having low std, SNR could be justified... Explain good points
+\end{itemize}
 
 % muunnos jälkikäteen jolla saa tasaiseksi  RH
 % RH loss funktioon
