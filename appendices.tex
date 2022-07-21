@@ -21,9 +21,10 @@
 
 \begin{figure}[H]
 	\centering
-	\subfloat[$\sigma=1e^{-2}$]{\includegraphics[width=0.33\linewidth]{images/model_choice/sigma_e-2}}
-	\subfloat[$\sigma=1e^{-3}$]{\includegraphics[width=0.33\linewidth]{images/model_choice/sigma_e-3}}
-	\subfloat[$\sigma=1e^{-4}$]{\includegraphics[width=0.33\linewidth]{images/model_choice/sigma_e-4}}
+	\subfloat[$\sigma=1e^{-2}$]{\includegraphics[width=0.45\linewidth]{images/model_choice/sigma_e-2}}
+	\subfloat[$\sigma=1e^{-3}$]{\includegraphics[width=0.45\linewidth]{images/model_choice/sigma_e-3}}
+	
+	\subfloat[$\sigma=1e^{-4}$]{\includegraphics[width=0.45\linewidth]{images/model_choice/sigma_e-4}}
 	\caption{ETS scores of RainNet over the validation set at model convergence used for choosing a $\sigma$ Gaussian NLL parameter. Thresholds are expressed in mm/h.}
 	\label{fig:sigma_selection}
 \end{figure}
@@ -31,9 +32,12 @@
 
 \begin{figure}[H]
 	\centering
-	\subfloat[Equal]{\includegraphics[width=0.5\linewidth]{images/weight/bcnn_t2_gsm_small_diff_lt5}}
-	\subfloat[Blundell]{\includegraphics[width=0.5\linewidth]{images/weight/bcnn_t2_gsm_small_diff_blundell_lt5}}
-	\subfloat[Epoch]{\includegraphics[width=0.5\linewidth]{images/weight/bcnn_t2_gsm_small_diff_epoch_lt5}}
+	\subfloat[Equal]{\includegraphics[width=\linewidth]{images/weight/bcnn_t2_gsm_small_diff_lt5}}
+	
+	\subfloat[Blundell]{\includegraphics[width=\linewidth]{images/weight/bcnn_t2_gsm_small_diff_blundell_lt5}}
+	
+	\subfloat[Epoch]{\includegraphics[width=\linewidth]{images/weight/bcnn_t2_gsm_small_diff_epoch_lt5}}
+	
 	\caption{The relation of KL-weighting scheme to the parameter posterior distributions across the network. $\mu$ histograms describe the parameter mean distributions, whereas $\sigma$ distributions describe the distribution of their standard deviations. The prior chosen is GSM SD.}
 	\label{fig:bcnn-training-weights}
 \end{figure}

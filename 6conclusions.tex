@@ -1,15 +1,11 @@
 \chapter{Conclusions}
 \label{chapter:conclusions}
 
-\begin{itemize}
-	\item built a NN probabilistic nowcasting model
-	\item Did we answer research questions?
-	\item What was the answer? 
-	\item Tested skill of model against baselines
-	\item OK deterministic skill (but not good enough)
-	\item Lackluster probabilistic skill -> lack of sample diversity 
-	\item silverline: makes pretty pictures and is fast, shows it is possible to combine DL for nonlinearity + probabilistic modeling
-	\item Many possible reasons left undiscovered for problems
-	\item much potential  for improvement
-	\item model not yet useful for forecasters
-\end{itemize}
+
+In this work, Bayesian Convolutional Neural Network (BCNN) model variants were developed in attempt to produce skillful and reliable ensemble based probabilistic nowcasts. Two facets of BCNN were evaluated. Firstly the skill of its ensemble means used as a point estimate for forecasting precipitations, and secondly the quality of its uncertainty estimates was evaluated to measure the fitness of the model for probabilistic nowcasting. These facets were compared to existing baseline models, both extrapolation and Neural Network based. 
+
+BCNN ensemble averages performed acceptably as deterministic nowcasts, exhibiting many of the known distinctive features of Neural Network based nowcasts, with both good and bad aspects. Judging from the results, the regularizing effect of the Bayesian approach seems to have worked out to at least some degree. From a probabilistic nowcast point of view on the other hand, the skill of BCNN was very lackluster, characterized by a striking lack of sample diversity, unreliability and low discriminatory skill at all precipitation intensity probability thresholds.
+
+Some parts of the model selection and training processes had their issues, leading to a high margin for improvement capacity with possibly little effort, especially in the realm of making reliable uncertainty estimates. Still, these issues are diverse and have unclear roots, meaning that although they might resolve easily, this is not guaranteed. 
+
+The silver lining of this work is that the developed models are indeed fast at making inference while making great use of the capacity of Neural Networks to fit nonlinear patterns, and most importantly do so while providing an early iteration of uncertainty estimates. The current model has much potential for improvement as outlined in the Discussion chapter \ref{chapter:discussion}. Although it is not yet of big use to forecasters, there is no reason to believe that other more advanced approaches to probabilistic nowcasting using Neural Networks will not be, whether or not they are based on this work, as there is an ever-increasing demand and need for skillful and reliable probabilistic nowcasting methods.

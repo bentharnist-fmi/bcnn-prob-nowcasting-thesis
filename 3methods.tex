@@ -80,6 +80,10 @@ for the current data.
 \subsection{The baseline: A U-Net based CNN}
 \label{section:rainnet}
 
+\begin{itemize}
+	\item why not convLSTM ??? often used too! 
+\end{itemize}
+
 For the implementation of a Bayesian Convolutional Network, we use as our base functional model  the same architecture as for RainNet by Ayzel et al. \cite{ayzel_rainnet_nodate}, which is itself heavily inspired by U-Net and SegNet model families. RainNet just like those families adopts a U-shaped encoder-decoder architecture. The encoder is composed of successive pooling and convolutional layers, reducing image sizes passed to the next layer while increasing the number of filters. The decoder part adopts a mirror archictecture of successive upsampling and convolutional layers, increasing the image size while reducing the number of filters. There is 5 levels in the encoder-decoder structure, just like in SegNet. Additionally, there are skip connections from the encoder to the decoder branch, carrying higher-level filter maps through, just like in U-Net. This is done in order not to lose smaller spatial scale details with pooling.  
 
 \begin{figure}[h]

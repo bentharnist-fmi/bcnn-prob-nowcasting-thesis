@@ -3,26 +3,22 @@
 
 \section{Goodness of results}
 
-\begin{itemize}
-	\item blundell scheme more guided by data, as less time spent guided by prior, rel. to weight distrib?
-	\item lt30 train worse than expected: prelim exps, experience with RN says otherwise: what did go wrong here???
-	\item Did scheme of prelearning lt5 before going to lt30 work ?? $\to$ newest data says otherwise...
-	\item both cont, cat metrics good at the same time is hard ...
-	\item These facets unfortunately undermine the utility of BCNN as it is for probabilistic nowcasting (RH, reldiag)
-	\item here explain 
-	\item sample variability seems low: perhaps because of high-freq detail loss; if details preserved such as in generative models: maybe we would need higher sample count to get sharp forecassts.
-	\item more test needed on whether stricter prior leads to better generalization by less overfitting and possibly better uncertainty estimates.
-\end{itemize}
 
+BCNN ensemble means produced acceptable deterministic skill, with properties in line with the RainNet baseline \cite{ayzel_rainnet_nodate} and other CNN based models, with characteristic blurring, tendency to be biased or unstable at further leadtimes, difficulties skillfully nowcasting high rainrate thresholds, but high success at lower thresholds and very good MAE. It should be kept in mind that achieving high predictive skill both with low threshold/MAE and high threshold is a difficult problem which is the focus of active research, and is related in the Deep Learning approach to the data imbalance problem of strong precipitation. This means that failure to predict strong precipitation is related to those events representing only a small part of the training data, while being of high importance. Trying to accomodate this by means of event importance weighting is a possibility, but this weighting might easily lead to the network performing worse on all non-extreme cases.
+
+
+Interestingly, \texttt{lt30} training after \texttt{lt5} pre-training not only did not improve, but worsened the predictive skill with Gaussian NLL loss, whereas it has in unrelated experiments \texttt{lt30} used as a standalone showed much better skill than \texttt{lt5} training with LogCosh and MS-SSIM loss functions, owning to a more stable iterative process. One hypothesis why the scheme didn't work out in the present case is that the network should not have been pre-trained with \texttt{lt5} but rather directly trained with \texttt{lt30}. One related ´explanation could be that the non-improvement might be due to the constant Gaussian NLL $\sigma$ data uncertainty parameter. Here with \texttt{lt5} training the parameter could indeed be assumed constant for each input, but it can be easily seen why iterative re-plugging in of the outputs breaks that assumption, as more uncertainty is brought into the inputs.
+
+From a probabilistic nowcasting point of view, BCNN did not live up to expectations. Only CRPS is relatively close to baselines, but all other metrics show that BCNN makes disastrously bad predictions compared to STEPS and LINDA-P. Rank histograms show that predictive uncertainty is severely under-estimated, Reliability diagrams that their predicted exceedance probabilities are not very reliable, and thus can not be trusted. ROC curves show that their discriminative power is also considerably worse than baseline, keeping in mind that the ROC curves suffer from too little probability categories, a subject which will be covered below. These results highlight the fact that in its current form, BCNN is not yet a useful probabilistic nowcasting method.
+
+Looking at ensembles and rank histograms it is noticeable that sample variability seems low. This might be related to hyperparameters or more generally to the stochastic model as will be expanded on below, or it might have something to do with the high-frequency detail loss occurring, as quick disappearance of them leads to only slowly evolving large-scale features remaining, which might undermine the variability at further leadtimes. If details were preserved such as in generative model based nowcasting methods, it could help assuming that is indeed part of the problem. 
 
 
 \section{Validity of Assumptions and Experiments}
 
-\begin{itemize}
-		\item what and how hyperparam optim is done
-\end{itemize}
+The way that hyperparameter optimization was carried out in this work is a possible source of problems, potentially having led to sub-optimal solutions. This and other validity issues will be covered in this section.
 
-\subsection*{SVI issues}
+\subsection*{SVI Issues}
 
 When it comes to the Variational Inference method employed, there might have been unguarded assumptions regarding prior and posterior families chosen. In particular, the problem in question might have benefited from a more careful choice of those families based on physical constraints and known behavior of precipitation.   
 Related to this matter, it is known that Variational approximations tend to underestimate uncertainty of learned distributions. \cite{bishop2006pattern, minka_family_nodate}. However, it is hard to say if this is the whole story here when observing the rank histograms and reliability diagrams of BCNN models. As the rank histogram shape of them is generally concave compared to models based on stochastic perturbations, the variability of ensembles is indeed less than that of observations most pronoucedly in variational models, as one might expect. 
@@ -36,7 +32,7 @@ With regards to this data uncertainty parameter, optimizing for it using convent
 
 \subsection*{Input Data}
 
-Now concerning the input data, the downsampling by a factor of two performed for computational performance reasons might have been detrimential for the validity of the verification of small-scale and especially high-intensity precipitation. There are two factors at play here. One is that because of the scale-dependence of precipitation lifetime, NN-based nowcasting model performance might not scale the same way when changing scale as extrapolation-based classical models, which might make interpreting the performance obtained at bigger scales more difficult. The other factor is that because average pooling is used for downsampling, higher rainrates get diluted, an effect exacerbated by the on average small spatial extent of intense precipitation. Hence, downsampled performance may not necessarily extrapolate to higher spatial resolutions. This is important because in the end, developed precipitation nowcasting models are usually to be used with input data having a grid resolution of 500 meters to one kilometer. 
+Now concerning the input data, the downsampling by a factor of two performed for computational performance reasons might have been detrimental for the validity of the verification of small-scale and especially high-intensity precipitation. There are two factors at play here. One is that because of the scale-dependence of precipitation lifetime, NN-based nowcasting model performance might not scale the same way when changing scale as extrapolation-based classical models, which might make interpreting the performance obtained at bigger scales more difficult. The other factor is that because average pooling is used for downsampling, higher rainrates get diluted, an effect exacerbated by the on average small spatial extent of intense precipitation. Hence, downsampled performance may not necessarily extrapolate to higher spatial resolutions. This is important because in the end, developed precipitation nowcasting models are usually to be used with input data having a grid resolution of 500 meters to one kilometer. 
 
 In addition to the downsampling issue, performing the train/validation/test split using six hour blocks might not have been enough to discard all harmful temporal correlations between different time-series, as input images from the end of one block are still correlated to images at the start of the next block, which is part of another split. Thus, even though the correlations are reduced, they do not disappear and the validation and test split performance is still over-estimated for Deep Learning models. A more robust split would have been using non-successive days as units.
 
@@ -44,19 +40,13 @@ In addition to the downsampling issue, performing the train/validation/test spli
 
 RAPSD results suffer from potentially spurious gain in small wavelength power at 120 minutes. This might have something to do with the OR-masking of precipitation reducing too much the area used, or it might be some other unknown effect or mistake in the calculations, which is why RAPSD results are to be taken with a grain of salt. 
 
-ROC curves of Figure \ref{fig:roc} in probabilitic verification suffer from too few probability categories, as the curves exhibit apparent discontinuity, while they should approximately follow a binormal distribution. This undermines their accuracy for determining forecast accuracy and resolution.
+ROC curves of Figure \ref{fig:roc} in probabilistic verification suffer from too few probability categories, as the curves exhibit apparent discontinuity, while they should approximately follow a bi-normal distribution. This undermines their accuracy for determining forecast accuracy and resolution.
 
-\section{Directions for further work}
+\section{Directions for Further Work}
 
-First and foremost, further work should aim to produce more reliable uncertainty estimates in the current framework. This could be approached by first examining the effect on initial posterior scales on sample variety. Secondly, BCNN would have to be trained and tested using non-downscaled 1km grid resolution reflectivity composites. 
+First and foremost, further work should aim to produce more reliable uncertainty estimates in the current framework. This could be approached by first examining the effect on initial posterior scales on sample variety. Secondly, BCNN would have to be trained and tested using non-downscaled 1km grid resolution reflectivity composites. If these do not resolve most current issues and more time and resources are available, it could be possible to implement other methods for uncertainty estimation using NN and compare them to Bayesian NN with Variational Inference. Different priors, maybe more informed ones or some with varying degrees of strictness, perhaps even non identically distributed among parameters, could be tried to see if that improves predictive skill.
+
+Some other simple tricks that might improve performance of BCNN are pre-learning the parameter means as point estimates and using the Bayesian approach to only learn posterior scales while keeping the means fixed. Assuming a non-biased deterministic model, this could make the learning process much more efficient, raising the quality of uncertainty estimates. Another trick would be to take a pre-trained BCNN model underestimating uncertainty, and add post-processing to the predictions, aiming to calibrate the bias and add stochastic noise for increasing predicted uncertainty. Lastly, despite not improving model performance, weight pruning could be tried for reducing computational expensiveness of making nowcasts. Blundell et al. \cite{blundell_weight_2015} show that Bayesian Neural Networks with a high number of parameters are very sparse thus and amenable to extensive weight pruning without much loss in skill. Although that study concentrates on fully-connected Neural Networks, it is worth considering if skillful pruning could be efficiently implemented in CNN architectures too, as Shridhar et al. \cite{shridhar_comprehensive_2019} seems to have experienced success doing that. 
 
 Despite being one very interesting research direction, decomposition of predictive uncertainty into aleatoric and epistemic uncertainties is not performed, as it was deemed out of scope for this work. Indeed, trying to model the uncertainty the radar image inputs is a separate problem which is not so much of interest in the domain of radar-based precipitation, as so much more can be done to improve performance by ameliorating radar scan fidelity, preprocessing, and choice. Despite of this, one could still view aleatoric uncertainty as a proxy to non-predictability of precipitation given starting conditions represented by the input frames. This could in the case of the iterative models presented at least serve as a metric to quantify the uncertainty created by feeding back in previous model outputs and could potentially allow the compound aleatoric and epistemic ensemble spread to better match the true distribution of the data. If modeling the uncertainty as data dependent and using heteroscedastic Gaussian likelihood, it would be interesting to take the same approach as Kendall et al. \cite{kendall_what_2017} and learn heteroscedastic uncertainties as a separate output channel. This uncertainty learning would eliminate the hairy problem of choosing a homoscedastic data uncertainty value a priori, and possibly make for more skillful probabilistic nowcasts. How the separate channel aleatoric uncertainty would be integrated with the ensembles for predictions is still an unsolved problem. 
 
-\begin{itemize}
-		\item If more time and resource: could try testing other uncertainty estimation methods to see how much it affects skill, uncertainty estimate
-		\item Could try and pre-learn means from non-bayesian CNN to improve skill
-		\item Best to try weight pruning: supported by evidence that lots of weights are around 0, if those are the same as those having low std, SNR could be justified... Explain good points
-\end{itemize}
-
-% muunnos jälkikäteen jolla saa tasaiseksi  RH
-% RH loss funktioon
