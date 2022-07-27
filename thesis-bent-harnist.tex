@@ -79,7 +79,7 @@
 % (ISO-8859-1 works). Change the latin1-option if you use UTF8 
 % (at some point LaTeX did not work with UTF8, but I'm not sure
 % what the current situation is) 
-\usepackage[latin1]{inputenc}
+\usepackage[utf8]{inputenc}
 % OT1 font encoding seems to work better than T1. Check the rendered
 % PDF file to see if the fonts are encoded properly as vectors (instead
 % of rendered bitmaps). You can do this by zooming very close to any letter 
@@ -92,7 +92,7 @@
 % going to use.
 % Examples of valid language codes: english (or USenglish), british, 
 % finnish, swedish; and so on.
-\usepackage[english, finnish, swedish]{babel}
+\usepackage[english, finnish, swedish, danish]{babel}
 
 
 % Font selection
@@ -218,12 +218,12 @@
 %                     first page of the first chapter
 %   twoinstructors  - changes the title of instructors to plural form
 %   twosupervisors  - changes the title of supervisors to plural form
-\usepackage[mydraft]{aalto-thesis}
+\usepackage[mydraft, twoinstructors]{aalto-thesis}
 %\usepackage[mydraft,doublenumbering]{aalto-thesis}
-%\usepackage{aalto-thesis}
+%\usepackage[twoinstructors]{aalto-thesis}
 
 \usepackage[nottoc,numbib]{tocbibind}
-\settocbibname{references}
+\settocbibname{References}
 
 \usepackage{dsfont}
 \usepackage{amsmath}
@@ -234,6 +234,12 @@
 \usepackage{booktabs}
 \usepackage{svg}
 \usepackage{float}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{siunitx}
+
+
+%\renewcommand{\bibname}{References}
 
 
 % Hyperref
@@ -275,13 +281,13 @@
 % variants you use (they are all there in the same place). 
 % ------------------------------------------------------------------
 \newcommand{\TITLE}{Probabilistic Precipitation Nowcasting using Bayesian Convolutional Neural Networks}
-\newcommand{\FTITLE}{Probabilistinen Sateen Nowcasting k�ytt�en Bayesilaisia Konvolutiivisia Neuroverkkoja}
+\newcommand{\FTITLE}{Probabilistinen Sateen Lähihetki-ennustaminen käyttäen Bayesilaisia Konvolutiivisia Neuroverkkoja}
 %\newcommand{\STITLE}{Den stora stygga vargen:}
 \newcommand{\SUBTITLE}{}
 \newcommand{\FSUBTITLE}{}
 %\newcommand{\SSUBTITLE}{Lilla Vargens universum}
-\newcommand{\DATE}{July 20th, 2022}
-\newcommand{\FDATE}{20. hein�kuuta 2022}
+\newcommand{\DATE}{July 27th, 2022}
+\newcommand{\FDATE}{27. heinäkuuta 2022}
 %\newcommand{\SDATE}{Den 18 februari 2018}
 
 % Supervisors and instructors
@@ -295,35 +301,35 @@
 % ``twoinstructors'' to the aalto-thesis package (aalto-thesis.sty
 % file line 72), so that the titles are in plural.
 % Example of one supervisor:
-%\newcommand{\SUPERVISOR}{Professor Antti Yl�-J��ski}
-%\newcommand{\FSUPERVISOR}{Professori Antti Yl�-J��ski}
-%\newcommand{\SSUPERVISOR}{Professor Antti Yl�-J��ski}
+%\newcommand{\SUPERVISOR}{Professor Antti Ylä-Jääski}
+%\newcommand{\FSUPERVISOR}{Professori Antti Ylä-Jääski}
+%\newcommand{\SSUPERVISOR}{Professor Antti Ylä-Jääski}
 % Example of twosupervisors:
 \newcommand{\SUPERVISOR}{Professor Arno Solin}
 \newcommand{\FSUPERVISOR}{Professori Arno Solin}
-%\newcommand{\SSUPERVISOR}{Professor Antti Yl�-J��ski\\
-%  Professor Petra Perustieteilij�}
+%\newcommand{\SSUPERVISOR}{Professor Antti Ylä-Jääski\\
+%  Professor Petra Perustieteilijä}
 
 % If you have only one instructor, just write one name here
 %\newcommand{\INSTRUCTOR}{Oili Ohjaaja M.Sc. (Tech.)}
-%\newcommand{\FINSTRUCTOR}{Diplomi-insin��ri Oili Ohjaaja}
-%\newcommand{\SINSTRUCTOR}{Diplomingenj�r Oili Ohjaaja}
+%\newcommand{\FINSTRUCTOR}{Diplomi-insinööri Oili Ohjaaja}
+%\newcommand{\SINSTRUCTOR}{Diplomingenjör Oili Ohjaaja}
 % If you have two instructors, separate them with \\ to create linefeeds
-\newcommand{\INSTRUCTOR}{Terhi M�kinen D.Sc. \\
-Seppo Pulkkinen D.Sc.}
-\newcommand{\FINSTRUCTOR}{Terhi M�kinen D.Sc.\\
-	Seppo Pulkkinen D.Sc.}
-%\newcommand{\FINSTRUCTOR}{Diplomi-insin��ri Oili Ohjaaja\\
-%  Diplomi-insin��ri Elli Opas}
-%\newcommand{\SINSTRUCTOR}{Diplomingenj�r Oili Ohjaaja\\
-%  Diplomingenj�r Elli Opas}
+\newcommand{\INSTRUCTOR}{D.Sc. Terhi Mäkinen, \\
+	D.Sc. Seppo Pulkkinen}
+\newcommand{\FINSTRUCTOR}{D.Sc. Terhi Mäkinen, \\
+	 D.Sc. Seppo Pulkkinen}
+%\newcommand{\FINSTRUCTOR}{Diplomi-insinööri Oili Ohjaaja\\
+%  Diplomi-insinööri Elli Opas}
+%\newcommand{\SINSTRUCTOR}{Diplomingenjör Oili Ohjaaja\\
+%  Diplomingenjör Elli Opas}
 
 % If you have two supervisors, it is common to write the schools
 % of the supervisors in the cover page. If the following command is defined,
 % then the supervisor names shown here are printed in the cover page. Otherwise,
 % the supervisor names defined above are used.
-%\newcommand{\COVERSUPERVISOR}{Professor Antti Yl�-J��ski, Aalto University\\
-%  Professor Petra Perustieteilij�, University of Helsinki}
+%\newcommand{\COVERSUPERVISOR}{Professor Antti Ylä-Jääski, Aalto University\\
+%  Professor Petra Perustieteilijä, University of Helsinki}
 
 % The same option is for the instructors, if you have multiple instructors.
 % \newcommand{\COVERINSTRUCTOR}{Oili Ohjaaja M.Sc. (Tech.), Aalto University\\
@@ -337,8 +343,8 @@ Seppo Pulkkinen D.Sc.}
 %\newcommand{\SPROFESSORSHIP}{Datateknik}
 % Professorship code is the same in all languages
 \newcommand{\PROFCODE}{SCI3060}
-\newcommand{\KEYWORDS}{Precipitation nowcasting, }
-\newcommand{\FKEYWORDS}{Sateen ennustaminen, }
+\newcommand{\KEYWORDS}{Precipitation nowcasting, Bayesian Neural Networks, Convolutional Neural Networks, probabilistic models}
+\newcommand{\FKEYWORDS}{Sateen lähihetki-ennustaminen, Bayesilaiset Neuroverkot, Konvolutiiviset Neuroverkot, probabilistiset mallit}
 %\newcommand{\SKEYWORDS}{}
 \newcommand{\LANGUAGE}{English}
 \newcommand{\FLANGUAGE}{Englanti}
@@ -346,6 +352,7 @@ Seppo Pulkkinen D.Sc.}
 % Author is the same for all languages
 \newcommand{\AUTHOR}{Bent Ivan Oliver Harnist}
 
+%\renewcommand\refname{References}
 
 % Currently the English versions are used for the PDF file metadata
 % Set the PDF title
@@ -382,9 +389,9 @@ Seppo Pulkkinen D.Sc.}
 % Bibliography style
 % acm style gives you a basic reference style. It works only with numbered
 % references.
-\bibliographystyle{acm}
+%\bibliographystyle{acm}
 % Plainnat is a plain style that works with both numbered and name citations.
-% \bibliographystyle{plainnat}
+\bibliographystyle{plainnat}
 
 
 % Extra hyphenation settings
@@ -428,33 +435,24 @@ Seppo Pulkkinen D.Sc.}
 % ------------------------------------------------------------------
 \thesisabstract{english}{
 
-%\begin{itemize}
-	%\item what is precipitation nowcast
-	%\item relevance and importance of nowcasting precipitation
-	% #####\item Why a neural network for this task 
-	%\item next relevance of uncertainty in this
-	%\item how to get uncertainty with NN
-	%\item What is BNN in one sentence
-	%\item Did implement BNN for this task
-	%\item Verified the developed models against existing baselines, on many aspects $\to$ ok but not great
-	%\item Found out using BNN for producing well-calibrated, accurate, reliable nowcasts is challenging
-	% ####\item Lots of moving parts and field is new
-	%\item Still, encouraging results to work on top of, esp as smoothing is not a problem: aleatoric uncertainty estimate integration is future priority
-%\end{itemize}
+Precipitation nowcasting refers to forecasting precipitation at timescales of minutes to a few hours. This is usually approached by using models which are fed with real-time weather radar reflectivity images correlated with observed precipitation. Reliably nowcasting precipitation probabilities at fine spatial scales is a societally important challenge. This is due to the danger and economic losses potentially incurred by heavy rainfall and particularly flash floods provoked by them. 
 
-Precipitation nowcasting refers to forecasting precipitation at timescales of dozens of minutes to a few hours, and is usually approached using models based on real-time radar images of precipitation. Now, reliably nowcasting precipitation probabilities locally is a societally important challenge, due to the danger and economic losses potentially incurred by unexpected precipitation, such as the damages caused by large hail or flash floods due to heavy localized rainfall. 
+In this thesis a Convolutional Neural Network (CNN) previously used for nowcasting deterministic precipitation estimates is adapted into a Bayesian Neural Network (BNN) for producing an ensemble of possible prediction scenarios used to estimate precipitation probabilities. A BNN is based on the principle of placing probability distributions onto values of network parameters that are estimated using Bayesian inference. In this work these are modeled as Normal distributions, whose parameters are learned through backpropagation in a scheme called Stochastic Variational Inference (SVI). The prediction ensembles for a trained model can then be formed by Monte Carlo sampling each parameter from its distribution, inducing a predictive distribution on data. % through marginalization of parameter distributions.
 
-In this thesis, a Convolutional Neural Network (CNN) used for nowcasting precipitation point estimates is adapted into a Bayesian Neural Network (BNN) for producing ensemble predictions and estimate precipitation probabilities. A BNN turns model parameter values into probability distributions that are estimated using bayesian inference. In this work, parameters are modeled using gaussian distributions, whose parameters are learned through Stochastic Variational Inference. The predictions are then simply formed by Monte-Carlo sampling each parameter from its distribution, inducing a predictive distribution.
-
-The developed model, titled BCNN, has its predictive skill evaluated against several baseline models using a multitude of criteria covering various aspects of the nowcasts. On some of those aspects, the model was found to perform at a skill close to or equal to baselines. However, it was also found to be challenging to produce a well-calibrated and reliable probabilistic nowcast for BCNN, owning to likely to properties of the model and problems in the training procedure. Nevertheless, BCNN provided encouraging preliminary results, paving the way to more solid attempts at probabilistic precipitation nowcasting using Bayesian Neural Networks. Particularly, a more thoughtful modeling and integration of the data-related uncertainties may make the nowcasts more reliable by making the predictive distribution less sensitive to initial conditions. 
-
+The skill of the developed model, abreviated BCNN, is evaluated against several established baseline models using a multitude of criteria covering various aspects of the nowcasts. On some aspects, BCNN is found to perform at a level close or equal to baseline models. However, it is found to be especially challenging to produce a well-calibrated and reliable probabilistic nowcast, owning likely to properties of the model and problems in the training procedure. Nevertheless, BCNN provided encouraging preliminary results, pointing out potential avenues of further study for probabilistic precipitation nowcasting using Bayesian Neural Networks. %Particularly, a more thoughtful modeling and integration of the data-related uncertainties may make the nowcasts more reliable by making the predictive uncertainty distribution better calibrated. 
 
 }
 
 % Abstract in Finnish
 % ------------------------------------------------------------------
 \thesisabstract{finnish}{
-Tiivistelm�
+
+Sateen lähihetki-ennustaminen viittaa sen ennustamiseen ajanjaksolla joka ulottuu minuuteista muutamaan tuntiin. Tähän yleensä lähestytään käyttäen malleja, joille syötetään ajantasaisia säätutkien heijastuvuus kuvia, jotka korreloivat havaitun sateen kanssa. Luotettavien lähihetken sateen todennäköisyys ennusteiden aikaansaaminen korkealla paikka resoluutiolla on yhteiskunnallisesti tärkeä haaste. Tämä johtuu etenkin odottamattomien sateiden ja niitä seuraavien äkkitulvien vaarasta ja taloudellisista vahingoista. %Esimerkkejä ovat suurien rakeiden aiheuttamat tuhot ja paikallisten rankkasateiden aikaansaamat äkkitulvat.
+
+Tässä työssä aiemmin sademäärien piste-ennusteisiin käytetty Konvolutiivinen Neuroverkko (CNN) muunnetaan Bayesilaiseksi Neuroverkoksi (BNN) tuottaakseen parven eri ennuste-skenaarioista, jolla estimoidaan sadetodennäköisyyksiä. BNN:n toiminta perustuu verkon parametrien muuntamiseen todennäköisyysjakaumiksi, jotka estimoidaan käyttäen Bayesilaista päättelyä. Tässä työssä nämä jakaumat mallinnetaan normaalijakaumina, jonka parametrit opitaan Stokastinen variationaalinen menetelmän (SVI) avulla. Ennuste parvet muodostetaan tällöin koulutetun mallin parametrien Monte Carlo otannalla, täten indusoiden ennuste-jakauman. 
+
+Kehitetyn mallin (lyhennettynä BCNN) suorituskykyä ennustus tehtävään arvioitiin ja verrattiin useisiin vakiintuneisiin malleihin, tämä käyttäen useita eri kriteerejä. Joissakin näistä BCNN ylsi samoihin tai lähes yhtä hyviin suorituskykyihin kuin vakiintuneet mallit. Kuitenkin, luotettavien ja hyvin-kalibroituneiden todennäköisyys-ennusteiden aikaansaaminen osoittautui haastavaksi kehitetylle mallille, luultavasti johtuen mallien ominaisuudesta tai koulutus-proseduurista. Näistä ongelmista huolimatta BCNN tarjoaa ensi-askeleet rakentaen pohjan tuleville ja kehittyneimille yrityksille rakentaa sateen probabilististisia lähi-ennusteita käyttäen Bayesilaisia Neuroverkkoja. 
+
 }
 
 
@@ -471,7 +469,13 @@ Tiivistelm�
 % show up in the TOC
 \chapter*{Acknowledgements}
 
-\fixme{My acknowledgements}
+First and foremost, I would like to thank my beloved wife Yukino for her continued support through the process of writing this thesis. As without her I wouldn't have been able to finish it in time. She always believed in me, even in my biggest moments of doubt and helped me get back on my feet, in order to continue the endeavor. 
+
+Next up, I owe enormous thanks to both my supervisor Arno and my advisors Terhi and Seppo for continuously offering precious advice and being willing to sacrifice much of their summer vacation to accommodate my graduation schedule through the month of July. During the recent months, they have also tremendously helped me improve my expertise both in precipitation nowcasting and Deep Learning. 
+
+Lastly, all of my colleagues at the Finnish Meteorological Institute deserve gratitude for the numerous fruitful discussions on subjects more or less related to the thesis and its topics, that have helped me shape my perspective further towards understanding. 
+
+
 \vskip 10mm
 
 \noindent Espoo, \DATE
@@ -544,7 +548,9 @@ Tiivistelm�
 % ------------------------------------------------------------------
 % You can use several .bib files:
 % \bibliography{thesis_sources,ietf_sources}
-\bibliography{references,other_references}
+\bibliography{References_final,other_references}
+% Deleted : notes, url for articles, inproceedings, file
+% DOI, isbn
 
 
 % Appendices go here
