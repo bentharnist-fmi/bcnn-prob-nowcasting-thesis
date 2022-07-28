@@ -1,55 +1,62 @@
 \chapter{Results}
 \label{chapter:results}
 
-This chapter will present the results obtained through the experiments performed. First, the results of the model hyperparameter optimization process are shown. Then, a nowcasting example is given for two meteorologically interesting cases for one selected model, with other versions and results for an existing baseline (STEPS) given in the appendix. The main version is \texttt{BCNN lt5} as trained with 32 batch member and one sample drawn per batch. The alternative versions are \texttt{BCNN lt30} based on the pretrained \texttt{BCNN lt5}, using 32 batch member and one sample drawn per batch, and \texttt{BCNN lt5 new}, which follows an alternative training procedure using a batch size of 8 and four samples drawn per batch. Lastly, both deterministic and probabilistic performance of the model variants is presented. 
+This chapter will present the results obtained through the experiments performed. First, the results of the model hyperparameter optimization process are shown. Then, a nowcasting example is given for two meteorologically interesting cases for one selected model, with other versions and results for an existing baseline (STEPS) given in the appendix. The main version is \texttt{BCNN lt5}. The alternative versions are \texttt{BCNN lt30} based on the pretrained \texttt{BCNN lt5} and \texttt{BCNN lt5 new}.Unfortunately, \texttt{BCNN lt5 V2} and \texttt{BCNN lt30 V2} were left out of the results because an error in the training procedure and was only realized afterwards (only 20\% of the training data was considered). Lastly, both deterministic and probabilistic performance of the BCNN variants and baselines models is presented. 
 
 \section{BCNN Hyperparameter Optimization}
+Gaussian NLL loss data uncertainty parameter $\sigma_\ell$ was chosen to be $10^{-4}$ among choices of $10^{-2}$, $10^{-3}$, and $10^{-4}$ with the procedure defined in Section \ref{section:rainnet}.
+As Gaussian NLL loss varies in magnitude when varying $\sigma_\ell$, the choice was done by observing the ETS skill score at different thresholds on leadtimes from five to 30 minutes on a deterministic RainNet, with the scores depicted in Figure \ref{fig:sigma_selection}. %Smaller $\sigma$ values appear to lead to sharper forecasts, while bigger ones to blurrier forecasts.
 
-Gaussian NLL loss data uncertainty parameter $\sigma$ was chosen to be $10^{-4}$ among choices of $10^{-2}$, $10^{-3}$, and $10^{-4}$ with the procedure defined in Section \ref{section:rainnet}. As Gaussian NLL loss varies in magnitude when varying $\sigma$, the choice was done by observing the ETS skill score at different thresholds on leadtimes from 5 to 30 minutes on a deterministic RainNet, with the scores depicted in Figure \ref{fig:sigma_selection}. %Smaller $\sigma$ values appear to lead to sharper forecasts, while bigger ones to blurrier forecasts.
+The first hyperparameter to be optimized for the Bayesian CNN is the prior. Here, it was chosen based on validation Gaussian NLL loss at model convergence. To give an idea about the natural distribution of network parameters under no regularizing prior, the parameter distribution for the deterministic RainNet with $\sigma_\ell = 10^{-4}$ is shown in Figure \ref{fig:rn-weight}. The distribution is centered at 0 and has high kurtosis, mostly containing parameter values between  $-0.2$ and $0.2$. 
 
+\begin{wrapfigure}{r}{0.4\textwidth}
+	\centering
+	\includegraphics[width=\linewidth]{images/weight/bcnn_rn_t1_lt5}
+	\caption{Parameter value distribution of RainNet trained with one leadtime and Gaussian NLL $\sigma_\ell = 10^{-4}$ after training. Histogram with 100 bins.}
+	\label{fig:rn-weight}
+\end{wrapfigure}
+
+
+The four priors used as candidates presented in Section \ref{section:bcnn} were chosen based on knowledge of the "natural" parameter distribution in Figure \ref{fig:rn-weight}. Two are Gaussian with $\mu_P, \sigma_P = 0,10^{-1}$ : \texttt{BCNN Gauss 1e-1 EQ}(1) and $\mu_P, \sigma_P = 0,10^{-3}$: \texttt{BCNN Gauss 1e-3 EQ} (2); and two are Gaussian Scale Mixtures with $\sigma_1,\sigma_2 = 10^{-1}, 10^{-3}$ : \texttt{BCNN GSM BD EQ} (3) and $\sigma_1,\sigma_2 = 3 \times 10^{-1}, 3 \times 10^{-2}$ : \texttt{BCNN GSM SD EQ} (4). 
+Prior (1) serves as a weak prior, allowing most "natural" parameter values. Prior (2) on the other hand is much stricter, restricting the range of possible values to be much smaller than it would be without it. Prior (3) mixes (1) and (2) to try to figure out if the approach of scale mixture has benefits. Prior (4) finally is based on the observation that the empirical distribution of deterministic RainNet models is relatively close the PDF of this prior, making it interesting to look at whether using it results in performance improvements.
+
+%
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.6\linewidth]{images/weight/bcnn_rn_t1_lt5}
-	\caption{Parameter value distribution of RainNet trained with one leadtime and Gaussian NLL $\sigma = 1e^{-4}$ after training. Histogram with 100 bins.}
-	\label{fig:rn-weight}
+	
+	
+	\subfloat[Gaussian prior with $\sigma_P = 10^{-1}$]{\includegraphics[width=0.5\linewidth]{images/weight/bcnn_t2}}
+	\subfloat[Gaussian prior with $\sigma_P = 10^{-3}$]{\includegraphics[width=0.5\linewidth]{images/weight/bcnn_t2_g_e-3}}
+	
+	
+	\subfloat[Gaussian Scale Mixture Prior:\\ $\sigma_1,\sigma_2 = 10^{-1}, 10^{-3}$ ]{\includegraphics[width=0.5\linewidth]{images/weight/bcnn_t2_gsm_big_diff_lt5}}
+	\subfloat[Gaussian Scale Mixture Prior:\\ $\sigma_1,\sigma_2 = 3 \times 10^{-1}, 3 \times 10^{-2}$]{\includegraphics[width=0.5\linewidth]{images/weight/bcnn_t2_gsm_small_diff_lt5}}
+	
+	\caption{Parameter posterior distributions in relation to the prior chosen. $\mu_q$ histograms describe the parameter mean distributions, whereas $\sigma_q$ distributions describe the distribution of their standard deviations. The KL-weighting scheme here is set to equal weighting. The black dashed vertical lines indicate the initialization value for standard deviations.}
+	\label{fig:bcnn-prior-weights}
 \end{figure}
+%
 
-The first hyperparameter to be optimized for the Bayesian CNN is the prior. Here, it was chosen based on validation Gaussian NLL loss at model convergence. To give an idea about the natural distribution of network parameters under no regularizing prior, the parameter distribution for the deterministic RainNet with $\sigma = 1e^{-4}$ is shown in Figure \ref{fig:rn-weight}. The distribution is centered at 0 and has high kurtosis, mostly containing parameter values between  $-0.2$ and $0.2$. 
 
+
+
+
+The effect of the prior on the parameter mean and standard deviation distributions is portrayed in Figure \ref{fig:bcnn-prior-weights}. It is seen that for all priors except (2), standard deviation distributions end up tilted towards bigger values than the initial scale $10^{-3}$, pointing to a possibility that it was way too small and that combined with a small learning rate $10^{-4}$, there wasn't just enough time for the them to grow where they should have. Concerning means, it is observed that the breadth of the posterior mean distribution is closely associated to the prior distribution breadth. With prior (2), it is seen that, most means are actually very close to 0 and while scales are close to their initial values, the biggest deviations tend to lower them, which can be intuitively understood as the prior scale is the same as the initial posterior scale.  
+
+The results of the optimization are shown in Figure \ref{fig:convergence-bcnn}.a. Here the KL-weighting scheme is set to equal weighting and the likelihood $\sigma_\ell = 10^{-4}$. It is shown that that best performance is achieved by prior (4), making it the choice to be used in later experiments. The weaker prior (1) is slower to converge but achieves relatively good asymptotic performance, while the stricter prior (2) gives decent results more quickly but has trouble converging to low loss values. This was substantiated by prior (2) making blurrier forecasts. Prior (3) behaved as a middle-ground between priors (1) and (2). It benefited from the same fast initial convergence as prior (2) but achieved asymptotic performance somewhere between the two. Interestingly, the training time difference between Gaussian and GSM priors was not significant contrary to expectations.
 
 \begin{figure}[H]
 	\centering
 	\subfloat[Prior choice]{\includegraphics[width=0.33\linewidth]{images/model_choice/Prior_choice}}
 	\subfloat[KL weighting choice]{\includegraphics[width=0.33\linewidth]{images/model_choice/KL_weight_choice}}
-	\subfloat[lt5 vs lt30]{\includegraphics[width=0.33\linewidth]{images/model_choice/t3_training}}
+	\subfloat[\texttt{lt5} vs \texttt{lt30}]{\includegraphics[width=0.33\linewidth]{images/model_choice/t3_training}}
 	\caption{The validation set Gaussian NLL loss of the different BCNN candidates against total training time, highlighting the model selection process.}
 	\label{fig:convergence-bcnn}
 \end{figure}
 
-Four priors were used as candidates based on knowledge of the "natural" parameter distribution. Two are Gaussian $\sim \mathcal{N}(0,1e^{-1})$ : \texttt{BCNN Gauss 1e-1 EQ}(1) and $\sim \mathcal{N}(0,1e^{-3})$: \texttt{BCNN Gauss 1e-3 EQ} (2); and two are Gaussian Scale Mixtures with $\sigma_1,\sigma_2 = 1e^{-1}, 1e^{-3}$ : \texttt{BCNN GSM BD EQ} (3) and $\sigma_1,\sigma_2 = 3e^{-1}, 3e^{-2}$ : \texttt{BCNN GSM SD EQ} (4). Prior (1) serves as a weak prior, allowing most "natural" parameter values. Prior (2) on the other hand is much stricter, restricting the range of possible values to be much smaller than it would be without it. Prior (3) mixes (1) and (2) to try to figure out if the approach of scale mixture has benefits. Prior (4) finally is based on the observation that the empirical distribution of deterministic RainNet models is relatively close the PDF of this prior, making it interesting to look at whether using it results in performance improvements.
-
-The results of the optimization are shown in Figure \ref{fig:convergence-bcnn}.a. Here the KL-weighting scheme is set to equal weighting and the likelihood $\sigma = 1e^{-4}$. It is shown that that best performance is achieved by prior (4), making it the choice to be used in later experiments. The weaker prior (1) is slower to converge but achieves relatively good asymptotic performance, while the stricter prior (2) gives decent results more quickly but has trouble converging to low loss values. This was substantiated by prior (2) making blurrier forecasts. Prior (3) behaved as a middle-ground between priors (1) and (2). It benefited from the same fast initial convergence as prior (2) but achieved asymptotic performance somewhere between the two. 
-
-\begin{figure}[H]
-	\centering
-	
-
-	\subfloat[Gaussian prior $\sim \mathcal{N}(0,1e^{-1})$]{\includegraphics[width=0.5\linewidth]{images/weight/bcnn_t2}}
-	\subfloat[Gaussian prior $\sim \mathcal{N}(0,1e^{-3})$]{\includegraphics[width=0.5\linewidth]{images/weight/bcnn_t2_g_e-3}}
-	
-
-	\subfloat[Gaussian Scale Mixture Prior:\\ $\sigma_1,\sigma_2 = 1e^{-1}, 1e^{-3}$ ]{\includegraphics[width=0.5\linewidth]{images/weight/bcnn_t2_gsm_big_diff_lt5}}
-	\subfloat[Gaussian Scale Mixture Prior:\\ $\sigma_1,\sigma_2 = 3e^{-1}, 3e^{-2}$]{\includegraphics[width=0.5\linewidth]{images/weight/bcnn_t2_gsm_small_diff_lt5}}
-	
-	\caption{Final parameter posterior distributions in relation to the initial prior distribution chosen. $\mu$ histograms describe the parameter mean distributions, whereas $\sigma$ distributions describe the distribution of their standard deviations. The KL-weighting scheme here is set to equal weighting.}
-	\label{fig:bcnn-prior-weights}
-\end{figure}
-
-The effect of the prior on the parameter mean and STD distributions is portrayed in Figure \ref{fig:bcnn-prior-weights}. It is seen that for all priors except (2), STD distributions end up tilted towards bigger values than the initial scale 1e-3, pointing to a possibility that it was way too small and that combined with a small learning rate 1e-4, there wasn't just enough time for the them to grow where they should have. Concerning means, it is observed that the breadth of the posterior mean distribution is closely associated to the prior distribution breadth. With prior (2), it is seen that, most means are actually very close to 0 and while scales are close to their initial values, the biggest deviations tend to lower them, which can be intuitively understood as the prior scale is the same as the initial posterior scale.  
-
 With the prior chosen, the next hyperparameter to be optimized is the KL weighting scheme. \texttt{BCNN GSM SD EQ} refers to the \texttt{equal} weighting scheme, \texttt{BCNN GSM SD EP} to the \texttt{epoch} weighting scheme, and \texttt{BCNN GSM SD B} to the \texttt{blundell} weighting scheme. The results are depicted in Figure \ref{fig:convergence-bcnn}.b. Best performance is observed with the Blundell weighting scheme which was chosen for further experiments, with close performance achieved using equal weighting. Although relatively close in performance, the Epoch weighting scheme did not deliver in the end, although it showed promising results in preliminary experiments, where the Blundell scheme did not work. The effect of the KL weighting scheme on the weight distribution is shown in Figure \ref{fig:bcnn-training-weights}. Here, the Blundell scheme differs considerably compared to others in terms of scale distribution, as they are more closely centered around the initial value and the shift is directed towards smaller values. 
 
-Finally total cumulative training times for \texttt{lt5} and \texttt{lt30} variants are compared in Figure \ref{fig:convergence-bcnn}.c. The training are shown for the model \texttt{BCNN lt5 V2}, which is an additional experiment not used for other verification. It is seen that continuing the training with 30 minute leadtime, i.e. six predictions, requires much more computational resources than simply using 5 minute leadtime, i.e. one prediction, which is only worth if skill is improved as a result. In the current example, using a likelihood $\sigma$ parameter of 2e-2, likelihood loss is improved with \texttt{lt30}, but the opposite is found using a likelihood $\sigma$ of 1e-4.
+Finally total cumulative training times for \texttt{lt5} and \texttt{lt30} variants are compared in Figure \ref{fig:convergence-bcnn}.c. The training are shown for the model \texttt{BCNN lt5 V2}, which is an additional experiment not used for other verification. It is seen that continuing the training with 30 minute leadtime, i.e. six predictions, requires much more computational resources than simply using 5 minute leadtime, i.e. one prediction, which is only worth if skill is improved as a result. In the current example, using a likelihood $\sigma_\ell$ parameter of $2 \times 10^{-2}$, likelihood loss is improved with \texttt{lt30}, but the opposite is found using a likelihood $\sigma_\ell$ of $10^{-4}$.
 
 \section{Nowcasting Examples}
 
@@ -112,7 +119,7 @@ Case 1 prediction mean and uncertainty, as well as exceedance probabilities are 
 
 For \texttt{BCNN lt30}, it can be seen from both figures that the overall skill is lower than for \texttt{lt5} cases. In particular, predictions are more smoothed out and more details are lost, hinting to the conclusion that \texttt{lt30} training did not work as expected. Here, predictive uncertainty does not increase with leadtime, and higher rainrates are often not predicted at all. However it can be seen that the network predicts consistently high exceedance probabilities, and that those are not (esp. 0.5 mm/h) smoothed out spatially with increased leadtime. 
 
-Finally, looking out at figures of the STEPS baseline, it is easily seen that despite being a simpler model, it predicts better spatial uncertainty in future rain. However STEPS has a hard time predicting exceedance probabilities for high (esp. 20.0 mm/h) thresholds. One striking feature is also that in the case of STEPS, predictive uncertainty is more spread out than predictive mean, which is a behavior not observed in any model developed here. 
+Finally, looking out at figures of the STEPS baseline, it is easily seen that despite being a simpler model, it predicts better spatial uncertainty in future rain. However STEPS has a hard time predicting exceedance probabilities for high (esp. 20.0 mm/h) thresholds. One feature is also that in the case of STEPS, predictive uncertainty is more spread out than predictive mean, which is a behavior not observed in any model developed here. This is likely due to the advection field perturbations applied to STEPS.
 
 
 \section{Deterministic Prediction Skill}
@@ -121,14 +128,14 @@ The following results describe the skill of ensemble means of developed models a
 
 \begin{figure}[H]
 	\centering
-	\subfloat[MAE]{\includegraphics[width=0.5\textwidth]{images/metrics/ALL_MAE}}%
-	\subfloat[ME]{\includegraphics[width=0.5\textwidth]{images/metrics/ALL_ME}}%
+	\subfloat[MAE (mm/h)]{\includegraphics[width=0.5\textwidth]{images/metrics/ALL_MAE}}%
+	\subfloat[ME (mm/h)]{\includegraphics[width=0.5\textwidth]{images/metrics/ALL_ME}}%
 
 	\caption{Continuous Metrics (MAE and ME) for BCNN variants and baselines, up until two-hour leadtime.}
 	\label{fig:cont-metrics}
 \end{figure}
 
-Starting off with the continuous metrics, their values are shown in Figure \ref{fig:cont-metrics}. BCNN and RainNet models have similar MAE and ME, except for \texttt{BCNN lt5} and \texttt{BCNN lt5 new} cases, where ensemble means exhibited clear bias towards too strong rainrate predictions after 30 minutes. These models shall be called "positively biased". ME was around zero for classical models and tended lower with other RainNet and BCNN models, showing bias towards too weak predictions ("negatively biased"), mainly due to smoothing. Still, BCNN and RainNet gave mostly clearly superior MAE compared to classical models, which is understandable as Gaussian NLL is a loss function part of the same class as MAE, which tends to optimize for minimizing pixel-per-pixel deviations and by extension MAE. 
+Starting off with the continuous metrics, their values are shown in Figure \ref{fig:cont-metrics}. BCNN and RainNet models have similar MAE and ME, except for \texttt{BCNN lt5} and \texttt{BCNN lt5 new} cases, where ensemble means exhibited clear bias towards too strong rainrate predictions after 30 minutes. These models shall be called "positively biased". ME was around zero for classical models and tended lower with other RainNet and BCNN models, showing bias towards too weak predictions ("negatively biased"), mainly due to smoothing. Still, BCNN and RainNet gave mostly clearly superior MAE compared to classical models, which is understandable as Gaussian NLL is a loss function part of the same class as MAE, which tends to optimize for minimizing pixel-per-pixel deviations and by extension MAE. There is reason to believe that because of the asymmetry caused by the log-transformation on NN input data, both negative bias shrinks and positive bias is grows slower in rainrate estimates than in transformed data.
 
 \begin{figure}[H]
 
@@ -194,7 +201,7 @@ The following section shows probabilistic prediction skill assessment results of
 	\label{fig:crps}
 \end{figure}
 
-The continuously ranked probability score for all ensemble models is shown in Figure \ref{fig:crps} for leadtimes up until one hour. Initially the best CRPS is achieved by LINDA-P, but after 10 minutes STEPS becomes the best. BCNN models consistently perform worse than STEPS, and only LINDA-P gets worse than \texttt{BCNN lt5} and \texttt{BCNN lt30} after 45 minutes.
+The continuously ranked probability score for all ensemble models is shown in Figure \ref{fig:crps} for leadtimes up until one hour. Overall, STEPS achieves best performance, likely owing to advection field perturbations. BCNN models consistently perform worse than STEPS, and only LINDA-P declines to the performance range of BCNN models after 20 minutes.
 
 \begin{figure}[H]
 	\centering
@@ -241,7 +248,7 @@ Now turning towards the reliability diagram, it is clear that nowcasts get less 
 
  
  \begin{figure}[H]
- 	\includegraphics[width=\linewidth]{images/metrics/RELDIAG_together}
+ 	\includegraphics[width=0.95\linewidth]{images/metrics/RELDIAG_together}
  	\caption{Reliability diagrams and sharpness histogram for one-hour exceedance probabilities at 0.5, 5.0, and 20.0 mm/h precipitation thresholds.}
  	\label{fig:reldiag}
  \end{figure}

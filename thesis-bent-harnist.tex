@@ -218,9 +218,9 @@
 %                     first page of the first chapter
 %   twoinstructors  - changes the title of instructors to plural form
 %   twosupervisors  - changes the title of supervisors to plural form
-\usepackage[mydraft, twoinstructors]{aalto-thesis}
+%\usepackage[mydraft, twoinstructors]{aalto-thesis}
 %\usepackage[mydraft,doublenumbering]{aalto-thesis}
-%\usepackage[twoinstructors]{aalto-thesis}
+\usepackage[twoinstructors]{aalto-thesis}
 
 \usepackage[nottoc,numbib]{tocbibind}
 \settocbibname{References}
@@ -286,8 +286,8 @@
 \newcommand{\SUBTITLE}{}
 \newcommand{\FSUBTITLE}{}
 %\newcommand{\SSUBTITLE}{Lilla Vargens universum}
-\newcommand{\DATE}{July 27th, 2022}
-\newcommand{\FDATE}{27. heinäkuuta 2022}
+\newcommand{\DATE}{July 29th, 2022}
+\newcommand{\FDATE}{29. heinäkuuta 2022}
 %\newcommand{\SDATE}{Den 18 februari 2018}
 
 % Supervisors and instructors
@@ -305,8 +305,8 @@
 %\newcommand{\FSUPERVISOR}{Professori Antti Ylä-Jääski}
 %\newcommand{\SSUPERVISOR}{Professor Antti Ylä-Jääski}
 % Example of twosupervisors:
-\newcommand{\SUPERVISOR}{Professor Arno Solin}
-\newcommand{\FSUPERVISOR}{Professori Arno Solin}
+\newcommand{\SUPERVISOR}{Prof. Arno Solin}
+\newcommand{\FSUPERVISOR}{Prof. Arno Solin}
 %\newcommand{\SSUPERVISOR}{Professor Antti Ylä-Jääski\\
 %  Professor Petra Perustieteilijä}
 
@@ -317,8 +317,8 @@
 % If you have two instructors, separate them with \\ to create linefeeds
 \newcommand{\INSTRUCTOR}{D.Sc. Terhi Mäkinen, \\
 	D.Sc. Seppo Pulkkinen}
-\newcommand{\FINSTRUCTOR}{D.Sc. Terhi Mäkinen, \\
-	 D.Sc. Seppo Pulkkinen}
+\newcommand{\FINSTRUCTOR}{FT Terhi Mäkinen, \\
+	 FT Seppo Pulkkinen}
 %\newcommand{\FINSTRUCTOR}{Diplomi-insinööri Oili Ohjaaja\\
 %  Diplomi-insinööri Elli Opas}
 %\newcommand{\SINSTRUCTOR}{Diplomingenjör Oili Ohjaaja\\
@@ -437,9 +437,9 @@
 
 Precipitation nowcasting refers to forecasting precipitation at timescales of minutes to a few hours. This is usually approached by using models which are fed with real-time weather radar reflectivity images correlated with observed precipitation. Reliably nowcasting precipitation probabilities at fine spatial scales is a societally important challenge. This is due to the danger and economic losses potentially incurred by heavy rainfall and particularly flash floods provoked by them. 
 
-In this thesis a Convolutional Neural Network (CNN) previously used for nowcasting deterministic precipitation estimates is adapted into a Bayesian Neural Network (BNN) for producing an ensemble of possible prediction scenarios used to estimate precipitation probabilities. A BNN is based on the principle of placing probability distributions onto values of network parameters that are estimated using Bayesian inference. In this work these are modeled as Normal distributions, whose parameters are learned through backpropagation in a scheme called Stochastic Variational Inference (SVI). The prediction ensembles for a trained model can then be formed by Monte Carlo sampling each parameter from its distribution, inducing a predictive distribution on data. % through marginalization of parameter distributions.
+In this thesis a Convolutional Neural Network (CNN) previously used for nowcasting deterministic precipitation estimates is adapted into a Bayesian Neural Network (BNN) for producing an ensemble of possible prediction scenarios used to estimate precipitation probabilities. A BNN is based on the principle of placing probability distributions onto values of network parameters that are estimated using Bayesian inference. In this work these are modeled as Normal distributions, whose parameters are learned through backpropagation in a scheme called Stochastic Variational Inference (SVI). The prediction ensembles for a trained model can then be formed by Monte Carlo sampling each parameter from its distribution, thus inducing a predictive distribution on data. % through marginalization of parameter distributions.
 
-The skill of the developed model, abreviated BCNN, is evaluated against several established baseline models using a multitude of criteria covering various aspects of the nowcasts. On some aspects, BCNN is found to perform at a level close or equal to baseline models. However, it is found to be especially challenging to produce a well-calibrated and reliable probabilistic nowcast, owning likely to properties of the model and problems in the training procedure. Nevertheless, BCNN provided encouraging preliminary results, pointing out potential avenues of further study for probabilistic precipitation nowcasting using Bayesian Neural Networks. %Particularly, a more thoughtful modeling and integration of the data-related uncertainties may make the nowcasts more reliable by making the predictive uncertainty distribution better calibrated. 
+The predictive skill of the developed model, abreviated BCNN, is evaluated against several established baseline models using a multitude of criteria covering various aspects of the precipitation nowcasts. On some aspects, BCNN is found to perform at a level close or equal to baseline models. However, it is found to be especially challenging to produce a well-calibrated and reliable probabilistic nowcast, owning likely to properties of the model and problems in the training procedure. Nevertheless, BCNN provided encouraging preliminary results, pointing out potential avenues of further study for probabilistic precipitation nowcasting using Bayesian Neural Networks. %Particularly, a more thoughtful modeling and integration of the data-related uncertainties may make the nowcasts more reliable by making the predictive uncertainty distribution better calibrated. 
 
 }
 
@@ -447,11 +447,11 @@ The skill of the developed model, abreviated BCNN, is evaluated against several 
 % ------------------------------------------------------------------
 \thesisabstract{finnish}{
 
-Sateen lähihetki-ennustaminen viittaa sen ennustamiseen ajanjaksolla joka ulottuu minuuteista muutamaan tuntiin. Tähän yleensä lähestytään käyttäen malleja, joille syötetään ajantasaisia säätutkien heijastuvuus kuvia, jotka korreloivat havaitun sateen kanssa. Luotettavien lähihetken sateen todennäköisyys ennusteiden aikaansaaminen korkealla paikka resoluutiolla on yhteiskunnallisesti tärkeä haaste. Tämä johtuu etenkin odottamattomien sateiden ja niitä seuraavien äkkitulvien vaarasta ja taloudellisista vahingoista. %Esimerkkejä ovat suurien rakeiden aiheuttamat tuhot ja paikallisten rankkasateiden aikaansaamat äkkitulvat.
+Sateen lähihetki-ennustaminen viittaa sen ennustamiseen ajanjaksolla joka ulottuu minuuteista muutamaan tuntiin. Tähän yleensä lähestytään käyttäen malleja, joille syötetään ajantasaisia säätutkien heijastuvuusmittauksia, jotka korreloivat havaitun sateen kanssa. Luotettavien lähihetken sateen todennäköisyys ennusteiden aikaansaaminen korkealla paikkaresoluutiolla on yhteiskunnallisesti tärkeä haaste. Tämä johtuu etenkin rankkasateiden ja niitä seuraavien äkkitulvien vaarasta ja taloudellisista vahingoista. %Esimerkkejä ovat suurien rakeiden aiheuttamat tuhot ja paikallisten rankkasateiden aikaansaamat äkkitulvat.
 
-Tässä työssä aiemmin sademäärien piste-ennusteisiin käytetty Konvolutiivinen Neuroverkko (CNN) muunnetaan Bayesilaiseksi Neuroverkoksi (BNN) tuottaakseen parven eri ennuste-skenaarioista, jolla estimoidaan sadetodennäköisyyksiä. BNN:n toiminta perustuu verkon parametrien muuntamiseen todennäköisyysjakaumiksi, jotka estimoidaan käyttäen Bayesilaista päättelyä. Tässä työssä nämä jakaumat mallinnetaan normaalijakaumina, jonka parametrit opitaan Stokastinen variationaalinen menetelmän (SVI) avulla. Ennuste parvet muodostetaan tällöin koulutetun mallin parametrien Monte Carlo otannalla, täten indusoiden ennuste-jakauman. 
+Tässä työssä aiemmin sademäärien piste-ennusteisiin käytetty Konvolutiivinen Neuroverkko (CNN) muunnetaan Bayesilaiseksi Neuroverkoksi (BNN) tuottaakseen parven eri ennuste-skenaarioista, jolla estimoidaan sadetodennäköisyyksiä. BNN:n toiminta perustuu verkon parametrien mallintamiseen todennäköisyysjakaumina, jotka estimoidaan käyttäen Bayesilaista päättelyä. Tässä työssä käytetään normaalijakaumia, jonka parametrit opitaan Stokastinen variationaalinen menetelmän (SVI) avulla. Ennuste parvet muodostetaan tällöin koulutetun mallin parametrien Monte Carlo otannalla, täten indusoiden ennuste-jakauman. 
 
-Kehitetyn mallin (lyhennettynä BCNN) suorituskykyä ennustus tehtävään arvioitiin ja verrattiin useisiin vakiintuneisiin malleihin, tämä käyttäen useita eri kriteerejä. Joissakin näistä BCNN ylsi samoihin tai lähes yhtä hyviin suorituskykyihin kuin vakiintuneet mallit. Kuitenkin, luotettavien ja hyvin-kalibroituneiden todennäköisyys-ennusteiden aikaansaaminen osoittautui haastavaksi kehitetylle mallille, luultavasti johtuen mallien ominaisuudesta tai koulutus-proseduurista. Näistä ongelmista huolimatta BCNN tarjoaa ensi-askeleet rakentaen pohjan tuleville ja kehittyneimille yrityksille rakentaa sateen probabilististisia lähi-ennusteita käyttäen Bayesilaisia Neuroverkkoja. 
+Kehitetyn mallin (lyhennettynä BCNN) suorituskykyä ennustus tehtävään arvioitiin ja verrattiin useisiin vakiintuneisiin malleihin, tämä käyttäen useita eri kriteerejä. Joissakin näistä BCNN ylsi samoihin tai lähes yhtä hyviin suorituskykyihin kuin vakiintuneet mallit. Kuitenkin, luotettavien ja hyvin-kalibroituneiden todennäköisyys-ennusteiden aikaansaaminen osoittautui haastavaksi kehitetylle mallille, luultavasti johtuen mallien ominaisuudesta tai koulutus-proseduurista. Näistä ongelmista huolimatta BCNN tarjoaa ensi-askeleet rakentaen pohjan tuleville ja kehittyneimille yrityksille rakentaa sateen probabilististisia lähihetki-ennusteita käyttäen Bayesilaisia Neuroverkkoja. 
 
 }
 
@@ -478,7 +478,7 @@ Lastly, all of my colleagues at the Finnish Meteorological Institute deserve gra
 
 \vskip 10mm
 
-\noindent Espoo, \DATE
+\noindent Otaniemi, \DATE
 \vskip 5mm
 \noindent\AUTHOR
 

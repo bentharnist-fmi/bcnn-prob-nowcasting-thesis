@@ -2,18 +2,18 @@
 \label{chapter:background} 
 %\fixme{Estimate at start: 12-15 pages}
 
-This background chapter aims to familiarize the reader with essential concepts necessary to understand the subsequent experiments and their results. First, in chapter \ref{section:precip_nc}, a brief introduction on where NWP stands in solving the problem at hand, as well as on weather radars and their use in nowcasting is given. Next classical deterministic and probabilistic methods for nowcasting are presented, as well as basic concepts regarding uncertainty qualification in the nowcasting context. In Section \ref{section:dl_for_nc}, An introduction to Neural Networks and their use in nowcasting is given. Finally, in Section \ref{section:bdl_theory} by a basic explanation is given on Bayesian inference and Bayesian Deep Learning with Stochastic variational inference. 
+This background chapter aims to familiarize the reader with essential concepts necessary to understand the subsequent experiments and their results. First, in chapter \ref{section:precip_nc}, a brief introduction on where NWP stands in solving the problem at hand, as well as on weather radars and their use in nowcasting is given. Next classical deterministic and probabilistic methods for nowcasting are presented, as well as basic concepts regarding uncertainty qualification in the nowcasting context. In Section \ref{section:dl_for_nc}, an introduction to Neural Networks and their use in nowcasting is given. Finally, in Section \ref{section:bdl_theory} by a basic explanation is given on Bayesian inference and Bayesian Deep Learning with Stochastic variational inference. 
 
 \section{Precipitation Nowcasting}
 \label{section:precip_nc}
 
 %\subsection*{Numerical Weather Prediction}
 
-Numerical weather prediction (NWP) is nowadays the main driver of operational weather prediction worldwide \cite{schultz_can_2021, bauer_quiet_2015}. On a very coarse level, NWP works by aggregating lots of meteorological observational data from sensors, which is used as initial state in solving atmospheric equations. This data can come from \textit{in situ}, a.k.a. close contact ground-based sensors such as rain gauges and thermometers, or upper atmosphere measurements such as those from radio sondes or aircraft sensors. Additionally and most importantly, remote-sensing sources such as satellites and weather radars provide lots of observational data, and their efficient use is one of the reasons for the improvements of NWP. Then, data assimilation is performed with that data, filling in gaps and agglomerating different sources to be consistent with each others, making the output of this process appropriate to be fed as input into a numerical simulation of the atmosphere. These simulations then consist of solving Navier-Stokes equations multiple timesteps into the future. With the model output in hand, different post-processing can be applied to answer various questions about the future state of weather, such as making precipitation forecasts.
+Numerical weather prediction (NWP) is nowadays the main driver of operational weather prediction worldwide \cite{schultz_can_2021, bauer_quiet_2015}. On a very coarse level, NWP works by aggregating meteorological observations from sensors, which is used as initial state in solving atmospheric equations. These data can come from \textit{in situ}, i.e. ground-based sensors such as rain gauges and thermometers, or upper atmosphere measurements such as those from radio sondes or aircraft sensors. Additionally and most importantly, remote-sensing sources such as satellites and weather radars provide lots of observational data, and their efficient use is one of the reasons for the improvements of NWP. Then, data assimilation is performed with that data, filling in gaps and agglomerating different sources to be consistent with each others, making the output of this process appropriate to be fed as input into a numerical simulation of the atmosphere. These simulations then consist of solving Navier-Stokes equations multiple timesteps into the future. With the model output in hand, different post-processing can be applied to answer various questions about the future state of weather, such as making precipitation forecasts.
 
-NWP can be performed on multiple spatio-temporal scales. Spatiotemporally coarse models cover a wide, sometimes global area and usually make simulations with longer \textit{leadtimes}, meaning at further timesteps in the future. On the other hand, other models are specialized in providing finer spatiotemporal details with a smaller spatial extent. One example of this type of model is the High-Resolution Rapid Refresh (HRRR) model \cite{alexander2020rapid}, developed by the United States National Oceanic and Atmospheric Administration (NOAA). HRRR covers the continental united states, and has 3 kilometer spatial and 1 hour temporal resolution. Although very useful for many purposes, even such fine-detailed NWP models have not quite enough details to be most useful in very short term and very localized precipitation nowcasting \cite{radhakrishnan2020casa} as described in Chapter \ref{chapter:intro}. As such, radars and radar-based nowcasting techniques shall be now described.
+NWP can be performed on multiple spatio-temporal scales. Spatio-temporally coarse models cover a wide, sometimes global area and usually make simulations with longer \textit{leadtimes}, meaning at further timesteps in the future. On the other hand, other models are specialized in providing finer spatiotemporal details with a smaller spatial extent. One example of this type of model is the High-Resolution Rapid Refresh (HRRR) model \cite{alexander2020rapid}, developed by the United States National Oceanic and Atmospheric Administration (NOAA). HRRR covers the continental united states, and has 3 kilometer spatial and 1 hour temporal resolution. Although very useful for many purposes, even such fine-detailed NWP models have not quite enough details to be most useful in very short term and very localized precipitation nowcasting \cite{radhakrishnan2020casa} as described in Chapter \ref{chapter:intro}. As such, weather radars and nowcasting techniques based on them shall be now described.
 
-\subsection*{Weather Radars and Products}
+\subsection*{Weather Radars and Rain Rate Estimation}
 
 	%\item physical functioning and paragraph on history of weather radar
 	%\item reflectivity products, 2D and 3D
@@ -26,20 +26,20 @@ Precipitation nowcasting is largely based on the data collected from weather rad
 There are many reasons for this, the main one being that radars are capable of directly observing precipitation particles (called hydrometeors) over a significant range with a high update rate and resolution \cite{schmid2019nowcasting}. This is something that no single other ground, upper-atmosphere, or radar observation is capable of providing, especially on the mesocscale ranging from tens to hundreds of kilometers. Combining many radars into a network can further increase sensing capacity to areas covering countries such as NEXRAD covering the continental united states \cite{noauthor_next_2020}, or entire continents such as the OPERA network covering most of Europe \cite{saltikoff_opera_2019}. 
 
 
-Radars were invented as a method to perform effective military surveillance during the second world war. Their potential use as weather observation tools was discovered coincidentally when it was realized that some echos of unknown origin in these surveillance radars were indeed precipitation. After the war, weather radars started to be routinely used in affluent parts of the world to provide precipitation observations and warnings.\cite{fabry_radar_2018}
+Radars were invented as a method to perform effective military surveillance during the second world war. Their potential use as weather observation tools was discovered coincidentally when it was realized that some echoes of unknown origin in these surveillance radars were indeed precipitation. After the war, weather radars started to be routinely used in affluent parts of the world to provide precipitation observations and warnings.\cite{fabry_radar_2018}
 
 
-The working of weather radars is based on emitting a very strong, directed and polarized short  electromagnetic pulse, which will interact with objects and particles in the atmosphere. This interaction is scattering, which reflects back a tiny fraction of the electromagnetic energy emitted at first. A receiver then listens to these returning signals, that are often called \textit{radar echos}. A radar typically scans the atmosphere radially at multiple azimuthal elevation angles. In addition to that angle, the vertical path of the beams, and consequently the vertical position of objects detected, are affected by the curvature of the earth and the refractive index of the atmosphere decreasing with height, bending the beam downwards. \cite{fabry_radar_2018}
+The functioning of weather radars is based on emitting a very strong, directed and polarized short  electromagnetic pulse, which will interact with objects and particles in the atmosphere. This interaction is scattering, which reflects back a tiny fraction of the electromagnetic energy emitted at first. A receiver then listens to these returning signals, that are often called \textit{radar echoes}. A radar typically scans the atmosphere radially at multiple azimuthal elevation angles. In addition to that angle, the vertical path of the beams, and consequently the vertical position of objects detected, are affected by the curvature of the earth and the refractive index of the atmosphere decreasing with height, bending the beam downwards. \cite{fabry_radar_2018}
 
-The lowest elevation angle scan is the one giving the most accurate information about precipitation actually hitting the ground, with echos further away being less reliable, as they come from targets upper in the sky. Higher elevation angle scans or products derived from a multitude of those can be used to further inform about the dynamics and development of precipitation. Combining scans and derived products from multiple radars into a single image makes what is called a \textit{radar composite}.
+The lowest elevation angle scan is the one giving the most accurate information about precipitation actually hitting the ground, with echoes further away being less reliable, as they come from targets upper in the sky. Higher elevation angle scans or products derived from a multitude of those can be used to further inform about the dynamics and development of precipitation. Combining scans and derived products from multiple radars and elevation angles into a single image makes what is called a \textit{radar composite}.
 %Some radars such as phased-array weather radars have a high vertical resolution with lots of elevation angles and fast update speeds, can be used to build three-dimensional reflectivity maps that help with more accurate nowcasting by taking into account vertical motion .
 
-One of the most important features of weather radars is the wavelength of the signal emitted by the radar. Bigger wavelengths are less attenuated going through the atmosphere, but can only be used to detect bigger particles. Equipment using bigger wavelengths is known to be more expensive than that using smaller wavelengths. Oppositely, smaller wavelengths detect smaller particles but their operational range is limited. Weather radars are classified according to their wavelength using a band denomination. The three most common classes are S-band, C-band, and X-band radars, in the order of longest to shortest wavelength.
+One of the most important features of weather radars is the wavelength of the signal emitted by the radar. Longer wavelengths are less attenuated going through the atmosphere, but can only be used to detect larger particles. Equipment using longer wavelengths is known to be more expensive than that using shorter wavelengths. Oppositely, shorter wavelengths detect smaller particles but their operational range is limited because of their higher attenuation. Weather radars are classified according to their wavelength using a band denomination. The three most common classes are S-band, C-band, and X-band radars, in the order of longest to shortest wavelength.
 
-In addition to meteorological echos, various non-meteorological sources are picked up by weather radars, such as solid obstacles, birds migrating, and insects. It is important to filter out or at least acknowledge those sources when preparing data for nowcasting. 
+In addition to meteorological echoes, various non-meteorological sources are picked up by weather radars, such as solid obstacles, birds migrating, and insects. These result in specific patterns visible on radar images, the nature of which depends on the source. It is consequently important to filter out or at least acknowledge those sources when preparing data for precipitation nowcasting. \cite{fabry_radar_2018}
 
 
-\textit{Reflectivity} ($Z$) (mm$^{6}$m$^{-3}$) is the quantity describing the amount of signal reflected from hydrometeors in the sky to the radar receiver. It is usually described in units of of decibel relative to $Z$, denoted dBZ. Standard weather radar beams are horizontally polarized, which produces the signals of interest when looking at radar scans for precipitation. One recent development of weather radars is the introduction of double polarization, meaning that in addition to the horizontal one, there are scans performed with vertically polarized beams. This enables estimation of precipitation type, drop shape, and helps with separating non-meteorological echos. Another important improvement to weather radars is the addition of doppler capacity, enabling estimation of target velocities from radar scans. 
+\textit{Reflectivity} (mm$^{6}$/m$^{3}$) symbolized $Z$, is the quantity describing the amount of signal reflected from hydrometeors in the atmosphere back to the radar receiver. It is usually described in units of decibel relative to $Z$, denoted dBZ. Standard weather radar beams are horizontally polarized, which produces the signals of interest when looking at radar scans for precipitation. One recent development of weather radars is the introduction of dual-polarization, meaning that in addition to the horizontal one, there are scans performed with vertically polarized beams. This enables estimation of precipitation type, drop shape, and helps with separating non-meteorological echoes. Another important improvement to weather radars is the addition of Doppler capacity, enabling estimation of target velocities from radar scans. Variables using information on both polarizations are called polarimetric variables.
 
 
 Converting the knowledge of (horizontal) reflectivity to that of rainrate is a highly non-trivial task and relies on approximations, because while water content is proportional to the third power of water droplet diameter, reflectivity of a single drop is proportional to its sixth power. Hence, total reflectivity depends on the drop size distribution, which depends on climatology and precipitation types. Given appropriate knowledge, the relationship between reflectivity and rainrate, commonly known as the Z-R relationship, is defined as  
@@ -48,8 +48,9 @@ Converting the knowledge of (horizontal) reflectivity to that of rainrate is a h
 \label{eq:z-r}
 	Z = AR^b,
 \end{equation}
-where $Z$ is reflectivity (mm$^{6}$m$^{-3}$), $R$ is rainrate(mm/h), and $A$ as well as $b$ are empirically determined parameters, usually by fitting rain gauge measurements to measured reflectivities. The most famous and widely used $A$ and $b$ parameters come from a study on drop size distribution from \citet{marshall1948size} in 1948, where $A=200$ and $b=1.6$.
+where $Z$ is reflectivity (mm$^{6}$/m$^{3}$), $R$ is rainrate (mm/h), and $A$ as well as $b$ are empirically determined parameters. The most famous and widely used $A$ and $b$ parameters come from a study on drop size distribution by \citet{marshall1948size} in 1948, where $A=200$ and $b=1.6$.
 
+%usually by fitting rain gauge measurements to measured reflectivities
 
 \subsection{Classical Deterministic Methods}
 \label{section:classic_nowcast}
@@ -69,7 +70,7 @@ When considering the atmosphere as a fluid, it is possible to apply tools and co
 %
 where $\psi$ denotes the precipitation field and $\pmb{v}$ the advection field. With this in mind, the advection of precipitation can be observed from two distinct points of view, corresponding two different sets of coordinates. These are \textit{Eulerian} and \textit{Lagrangian} coordinates. The simpler one is Eulerian coordinates, which are those of the grid or space in which precipitation evolves. Lagrangian coordinates on the other hand center around particles or discrete unit being advected, so that each stays at the origin in its own set of Lagrangian coordinates, while the surroundings evolve relative to it. 
 
-A precipitation field where the only time evolution happening is the precipitation being advected has a common Lagrangian coordinate system for all precipitation units. This is never truly the case, but the idea is useful for developing nowcasting models. This concept can be formalized as that of \textit{Lagrangian persistence}, meaning that in Lagrangian coordinates, the field stays constant. This is easy to understand by connecting the concept to its more natural counterpart of Eulerian persistence, where the precipitation field just stays constant from a motionless observer's point of view. Lagrangian persistence allows separating the time evolution of the precipitation field into an advection term and a source term, representing the divergence of the field, that is creation and weakening of precipitation. Assuming no divergence in the advection field, and using Eq. \eqref{eq:adv} this is formalized as 
+A precipitation field where the only time evolution happening is the precipitation being advected has a common Lagrangian coordinate system for all precipitation units. This is never truly the case, but the idea is useful for developing nowcasting models. This concept can be formalized as that of \textit{Lagrangian persistence}, meaning that in Lagrangian coordinates, the field remains constant. This is easy to understand by connecting the concept to its more natural counterpart of Eulerian persistence, where the precipitation field just remains constant from a motionless observer's point of view. Lagrangian persistence allows separating the time evolution of the precipitation field into an advection term and a source term, representing the divergence of the field, that is creation and weakening of precipitation. Assuming no divergence in the advection field, and using Eq. \eqref{eq:adv} this is formalized as 
 
 \begin{equation}
 \
@@ -80,37 +81,37 @@ where $S$ denotes the source/sink term. Basic precipitation field extrapolation 
 
 \subsubsection*{Extrapolation Based Models}
 
-The most basic form of modern model of the first category is pure extrapolation along an estimated advection field. Very often nowadays the advection field is estimated using an optical flow method, such as Lukas-Kanade optical flow \cite{lucas1981iterative} on successive radar frames and the precipitation field is extrapolated along that advection field. This is usually done using a Semi-Lagrangian Extrapolation scheme \cite{staniforth_semi-lagrangian_1991}, which is a cheap way of performing numerical integration for the advection problem by breaking it into multiple interpolation operations. 
+The most basic form of modern model of the first category is pure extrapolation along an estimated advection field. Very often nowadays the advection field is estimated using an optical flow method, such as Lucas-Kanade optical flow \cite{lucas1981iterative} on successive radar frames and the precipitation field is extrapolated along that advection field. This is usually done using a Semi-Lagrangian Extrapolation scheme \cite{staniforth_semi-lagrangian_1991}, which is a cheap way of performing numerical integration for the advection problem by breaking it into multiple interpolation operations. 
 
 Other models of the first category attempt to model the time evolution of the advection field and add some sort of diffusion term to better represent the loss of predictability being faster at smaller scales \cite{germann2002scale}. One such model is developed by \citet{ryu_improved_2020} in 2020. This model models the evolution of the advection field using Burgers' equation, containing an advection and diffusion term, and additionally adds a facultative diffusion term to the nowcasted field. Another example of a similar modification is the 2013 work of \citet{sakaino_spatio-temporal_2013} where advection field temporal evolution was modeled using the Navier-Stokes with a continuity equation, and an anisotropic diffusion term, better conserving important details, was applied to the field. 
 
-Classical techniques such as Tracking Radar Echos through Correlation (TREC) \cite{rinehart_three-dimensional_1978} still being in great use. TREC simply calculates correlations between neighboring areas in successive frames and extrapolates the precipitation field along directions of maximum correlation. This technique is simple but suffers from problems in maintaining the spatial structure of echos over longer time-frames. Over the years, there has been an accumulations of models proposing improvements to TREC. There exists also many storm cell based nowcasting techniques such as TITAN by \citet{dixon1993titan}, introduced in 1993. These techniques are often also based on extrapolation and many times enable tracking and forecast of cell life-cycle features, that are particularly useful in the context of convective storms. 
+Classical techniques such as Tracking Radar Echoes through Correlation (TREC) \cite{rinehart_three-dimensional_1978} still are in great use. TREC simply calculates correlations between neighboring areas in successive frames and extrapolates the precipitation field along directions of maximum correlation. This technique is simple but suffers from problems in maintaining the spatial structure of echoes over longer leadtimes. Over the years, there has been an accumulations of models proposing improvements to TREC. There exists also many storm cell based nowcasting techniques such as TITAN by \citet{dixon1993titan}, introduced in 1993. These techniques are often also based on extrapolation and many times enable tracking and forecast of cell life-cycle features, that are particularly useful in the context of convective storms. 
 
 \subsubsection*{Modeling Non-linear Evolution of Precipitation Fields}
 
 One of the early successful (in the sense that it presents improvement over advection-based extrapolation) attempts at modeling the time-evolution of precipitation fields is the Spectral Prognosis (S-PROG) model by \citet{seed_dynamic_2003} from 2003. The model is based on the observation that precipitation feature lifetimes depend on their scale, with smaller features lasting shorter than bigger ones. This information is used by decomposing the precipitation field into a cascade of fields, each corresponding to features of a certain spatial scale. Each of those cascade level time evolution is then modeled separately using autoregressive (AR) models in Lagrangian coordinates. %One side effect of AR models interacting is that the field gets blurred with time, as smaller scales 
 
-A second recent model taking a similar approach is ANVIL by \citet{pulkkinen_nowcasting_2020} from 2020. Instead of single reflectivity scans or reflectivity derived products, ANVIL utilizes Vertically Integrated Liquid (VIL), an estimate of the total precipitation mass in a cloud, as a proxy to precipitation hitting the ground. ANVIL decomposes the field into a scale cascade just like S-PROG, but uses an autoregressive integrated process (ARI) to model the time-evolution at each level. ARI are autoregressive processes applied to the time derivative of the fields. This helps not to lose smaller details in the process. ANVIL was shown to surpass S-PROG for the prediction of intense precipitation ($>$ 5 mm/h and $>$ 20 mm/h) using multiple verification metrics. 
+A second recent model taking a similar approach is ANVIL by \citet{pulkkinen_nowcasting_2020} from 2020. Instead of single reflectivity scans or reflectivity derived products, ANVIL utilizes Vertically Integrated Liquid (VIL), an estimate of the total precipitation mass in a cloud, as a proxy to precipitation hitting the ground. ANVIL decomposes the field into a scale cascade just like S-PROG, but uses an autoregressive integrated process (ARI) to model the time-evolution at each level. ARI are autoregressive processes applied to the time derivative of the fields. This helps in avoiding the loss of small-scale precipitation features in the process. ANVIL was shown to surpass S-PROG for the prediction of intense precipitation ($>$ 5 mm/h and $>$ 20 mm/h) using multiple verification metrics. 
 
 There is also examples of using phased-array weather radars to do three-dimensional extrapolation nowcasting, allowing to capture some physical processes such as linear patterns of growth and decay. One example of this is the 2016 work of \citet{otsuka_precipitation_2016}. 
 
 
 \subsection{Classical Probabilistic Methods}
 
-Probabilistic nowcasting models can be roughly divided into two categories: Quantile-based and ensemble-based methods, the latter of which being the focus of this work. They are methods where a multiple of stochastic nowcasts are created, the set of them being called an ensemble, and probabilistic features such as rainrate exceedance probabilities are estimated from the data distribution of that ensemble.  
-There exists also neighborhood methods, that draw new precipitation values from neighbors at random to produce a probabilistic nowcast. The first of such methods to be implemented is by Andersson and Ivarsson \citet{andersson_model_1991} in 1991. 
+Probabilistic nowcasting models can be roughly divided into two categories: Quantile-based and ensemble-based methods, the latter of which being the focus of this work. In ensemble-based methods, multiple stochastic nowcasts are generated, the set of them being called an ensemble, and probabilistic features such as rainrate exceedance probabilities are estimated from the data distribution of that ensemble.  
+There in addition exists neighborhood methods, in which new precipitation values are drawn from neighbors at random to produce the probabilistic nowcast. The first of such methods having been developed is that of \citet{andersson_model_1991} in 1991. 
 % maybe something on quantile based stuff to add later
 
 
-The most influential of modern probabilistic nowcast methods is certainly STEPS by \citet{bowler_steps_2006}, dating from 2006. It is an ensemble method that is close to S-PROG in that it divides the precipitation field into a scale cascade and models their evolution independently through AR models. Uncertainty in STEPS is modeled through the injection of stochastic noise per ensemble member at different scales. One interesting feature of STEPS is that it allows blending an NWP forecast to radar images to create a more reliable nowcast at longer leadtimes. STEPS is shown to retain some prediction skill up until six hours leadtime. 
+The most influential of modern probabilistic nowcast methods is certainly STEPS by \citet{bowler_steps_2006}, dating from 2006. It is an ensemble method that is close to S-PROG in that it divides the precipitation field into a scale cascade and models their evolution independently through AR models. Uncertainty in STEPS is modeled through the injection of stochastic noise per ensemble member at different scales. One interesting feature of STEPS is that it allows blending an NWP forecast to radar images to create a more reliable nowcast at longer leadtimes. STEPS is shown to retain some degree of prediction skillfulness up until leadtimes of six hours. \citet{bowler_steps_2006}
 
-Another more recent ensemble nowcasting model is Lagrangian Integro-Difference equation model with Autoregression (LINDA) by \citet{pulkkinen_lagrangian_2021} in 2021. LINDA is designed specifically to accurately nowcast heavy localized rainfall and comes in two variants: LINDA-D for deterministic nowcasts, and LINDA-P for producing probabilistic nowcasts. LINDA is composed of multiple steps that are the identification of rain cells, advection, AR modeling for the growth and decay of features, convolutions described loss of detail at small scale, and finally stochastic perturbations in the case of LINDA-P. LINDA-D was shown to surpass both S-PROG and ANVIL in terms of skill at  $>$ 5 mm/h and $>$ 20 mm/h. LINDA-P on the other hand was shown to produce more reliable and discriminative, as well as better calibrated forecasts than STEPS at high thresholds such as those described above. The forecasts are also less blurry than those of S-PROG or STEPS. In essence, LINDA describes the state-of-the-art in terms of nowcasting high-intensity localized rain. 
+Another more recent ensemble nowcasting model is Lagrangian Integro-Difference equation model with Autoregression (LINDA) by \citet{pulkkinen_lagrangian_2021} in 2021. LINDA is designed specifically to accurately nowcast heavy localized rainfall and comes in two variants: LINDA-D for deterministic nowcasts, and LINDA-P for probabilistic nowcasts. LINDA is composed of multiple steps that are the identification of rain cells, advection, AR modeling for the growth and decay of features, convolutions described loss of detail at small scale, and finally stochastic perturbations in the case of LINDA-P. LINDA-D is shown to surpass both S-PROG and ANVIL in terms of skill at  $>$ 5 mm/h and $>$ 20 mm/h. LINDA-P on the other hand is shown to produce more reliable and discriminative, as well as better calibrated forecasts than STEPS at high thresholds such as those described above. The forecasts are also less blurry than those of S-PROG or STEPS. In essence, LINDA describes the state-of-the-art in terms of nowcasting high-intensity localized rain. 
 
 
 \subsection{Predictive Uncertainty Estimation and Decomposition}
 
 \textit{Predictive uncertainty} is defined as the total uncertainty arising in practice when making predictions with a probabilistic or ensemble based model.
-Broadly speaking, in statistical modeling and also Deep Learning, predictive uncertainty can be divided into two main categories. These are \textit{aleatoric uncertainty}, which originates from the input data, and \textit{epistemic uncertainty}, which originates in the inaccuracy of the model. Epistemic uncertainty can be reduced with more training or other changes, while aleatoric uncertainty can not be by definition. Aleatoric uncertainty is further classified into homoscedastic and heteroscedastic aleatoric uncertainties. The former assumes that all observation share the same underlying uncertainty, while the latter allows the uncertainty of each observation to differ. \cite{shridhar_comprehensive_2019} Characterization of uncertainty is important because not taking it into account might lead to over-estimation or under-estimation of failure probability of a model, as explained by Der Kiureghian \cite{kiureghian_aleatory_2009}. 
+Broadly speaking, in statistical modeling and also Deep Learning, predictive uncertainty can be divided into two main categories. These are \textit{aleatoric uncertainty}, which originates from the input data, and \textit{epistemic uncertainty}, which originates in the inaccuracy of the model. Epistemic uncertainty can be reduced with more training or other changes, while aleatoric uncertainty can not be by definition. Aleatoric uncertainty is further classified into homoscedastic and heteroscedastic aleatoric uncertainties. The former assumes that all observation share the same underlying uncertainty, while the latter allows the uncertainty of each observation to differ \cite{shridhar_comprehensive_2019}. Characterization of uncertainty is important because not taking it into account might lead to over- or under-estimation of the failure probability of a model, as explained by \citet{kiureghian_aleatory_2009}. 
 
 
 \subsubsection*{Uncertainty in Radar-based Nowcasting}
@@ -118,34 +119,34 @@ Broadly speaking, in statistical modeling and also Deep Learning, predictive unc
 In radar-based nowcasting, the aleatoric uncertainty of models can be divided into that emanating from measurements and that coming from other factors induced by the processing of data inside the nowcasting process. Measurement uncertainty can again be subdivided into sampling-based and system-based uncertainties. Sampling uncertainty refers to the randomness coming from which hydrometeor or obstacle the radar beam encountered in the scanning process, and system-related ones come from various factors in the radar itself. According to \citet{cao_measurement_2016}, sampling-based uncertainties dominate in well-configured radar systems. Other factors inducing aleatoric uncertainty include all stages where information is possibly lost, such as data compression operations. Additionally, for methods where model outputs are iteratively fed back into the algorithm to produce new predictions, the whole compound uncertainty of the previous step output is accounted as aleatoric uncertainty in the next step. 
 
 
-Prediction error and uncertainty are related to each others but not equivalent. Sources of errors can be used to partly infer sources of uncertainty, keeping in mind that model outputs may have high bias (possible error) but low variance (uncertainty). Bowler et al. enumerates sources of prediction errors in the context of advection based models, dividing them into three categories. These are errors in estimating the initial advection field, in modeling its time evolution and the Lagrangian evolution of features \cite{bowler_steps_2006}. Part of these errors are related to the model itself, and as epistemic uncertainty can by definition be reduced, these sources of error can be in decreased in practice. This can be achieved by for example improving data quantity and quality with regards to the task at hand, improving the functional model to better express dependencies between outputs and outputs, and by improving the model optimization procedure and assumptions made to better fit the task at hand.%, such as a more fitting prior in Bayesian Deep Learning. 
+Prediction error and uncertainty are related to each others but not equivalent. Sources of errors can be used to partly infer sources of uncertainty, keeping in mind that model outputs may have high bias, i.e. systematic error, but low variance, i.e. uncertainty. \citet{bowler_steps_2006} enumerates sources of prediction errors in the context of advection based models, dividing them into three categories. These are errors in estimating the initial advection field, in modeling its time evolution and the Lagrangian evolution of features. Part of these errors are related to the model itself, and as epistemic uncertainty can by definition be reduced, these sources of error can be in decreased in practice. This can be achieved by e.g. improving the quantity and quality of data with regards to the task at hand, improving the functional model to better express dependencies between inputs and outputs, and improving the model optimization procedure and assumptions made to better fit the problem.%, such as a more fitting prior in Bayesian Deep Learning. 
 
 
 
 \section{Deep Learning for Nowcasting}
 \label{section:dl_for_nc}
 
-Artificial Neural Networks, abbreviated Neural Network or NN in a machine learning context, are computational systems inspired by biological neural networks, such as those present in the human brain. In this work, the terms Deep Learning will be used as meaning "regarding neural networks and their usage". Neural networks serve to accomplish many tasks, usually of the domain of artificial intelligence, such as regression, classification, or agent decision making. NN consist of discrete units called neurons linked to each others, usually arranged in functional units known as layers, in which case connections are formed between layers. Input data is fed into the NN to an input layer, transforming the input through learnable parameters, and this transformed signal is propagated through other layers further transforming the signal. The organization of layers and the way they are connected is known as the \textit{network architecture}. Finally, signals converge to an output layer giving the product of the network, such as a prediction or class of input data. Between neurons and layers there are non-linear \textit{activation functions}, which are in essence non-linear transformation on data, which are the basic mechanism that enables neural networks to learn complex nonlinear patterns.
+Artificial Neural Networks, abbreviated as Neural Network or NN in a machine learning context, are computational systems inspired by biological neural networks, such as those present in the human brain. In this work, the terms Deep Learning will be used as meaning "regarding neural networks and their usage". Neural networks serve to accomplish many tasks, usually of the domain of artificial intelligence, such as regression, classification, or agent decision making. NN consist of discrete units called neurons linked to each others, usually arranged in functional units known as layers, in which case connections are formed between layers. Input data is fed into the NN to an input layer, transforming the input through learnable parameters, and this transformed signal is propagated through other layers further transforming the signal. The organization of layers and the way they are connected is known as the \textit{network architecture}. Finally, signals converge to an output layer giving the product of the network, such as a prediction or class of input data. Between neurons and layers there are non-linear \textit{activation functions}, which are in essence non-linear transformation on data, which are the basic mechanism that enables neural networks to learn complex nonlinear patterns.
 
-\subsubsection*{Neural Network Optimization}
+\subsubsection*{Neural Network Training}
 
 In Neural Networks, parameters are usually not tuned by hand due to the sheer complexity of the task. Instead, finding optimal parameters for performing the task is framed as an optimization problem. This is accomplished using standard unconstrained optimization tools and the Backpropagation algorithm, allowing learning of the parameters, despite of the problem being very high-dimensional and non-convex. This algorithm is based on producing an output by passing input data through the network, and then calculating a metric of how well the network succeeded at the task, known as a \textit{loss function} or cost function. The gradient of the output related to network parameters are then calculated backwards starting from the loss function, flowing through the network using the chain rule of derivation. These gradients are then used to update model parameters using simple gradient descent or its variations. 
 
-Usually, the input data is divided input small subsets called \textit{batches} or mini-batches, and the gradient updates are calculated by going iteratively through them in a process called \textit{training}. Gradient descent over these mini-batches is called Stochastic Gradient Descent. Going through all of the training data one time is called an \textit{epoch}, and training is usually continued for many epochs. In deep learning, available data is usually split into training, validation, and test data. Validation data is used for the validation process, in which performance of the NN is assessed on data unused for training. This information on performance can then be used to tune \textit{hyperparameters}, that is parameters that are constant and set before training, or perform other types decision-making related to the training process, such as early stopping of the training, if performance is likely not to improve anymore. The reason why training data is not used here is that the network usually performs better on data that it was trained on compared to other data. Lastly, test data is used for independent assessment of the network performance. This is needed because even though validation data is not used for training, the network is still biased to perform better on it if decision that improve performance were made based on it. Validation data can thus not be trusted on as an independent evaluator of network performance. 
+Usually, the input data is divided input small subsets called \textit{mini-batches}, here abbreviated as batches (although a batch may refer to the whole data in literature), and the gradient updates are calculated by going iteratively through them in a process called \textit{training}. Gradient descent over these mini-batches is called Stochastic Gradient Descent. Going through all of the training data once is called an \textit{epoch}, and training is usually continued for many epochs. In deep learning, available data is usually split into training, validation, and test data. Validation data is used for the validation process, in which performance of the NN is assessed on data unused for training. This information on performance can then be used to tune \textit{hyperparameters}, that is parameters that are constant and set before training, or perform other types decision-making related to the training process, such as early stopping of the training if performance is likely not to improve anymore \cite{prechelt1998early}. The reason why training data is not used here is that the network usually performs better on data that it was trained on compared to other data. Lastly, test data is used for independent assessment of the network performance. This is needed because even though validation data is not used for training, the network is still biased to perform better on it if decision that improve performance were made based on it. Validation data can thus not be trusted on as an independent evaluator of network performance. 
 
 \subsubsection*{Different Varieties of Neural Networks}
 There are multiple types of Neural Network architectures that are each good at different types of task. Main types with some relevance to nowcasting and Bayesian Deep Learning are feed-forward neural networks, Recurrent Neural Networks (RNN), and Convolutional Neural Networks (CNN). Feed-forward neural networks are the earliest type of NN, with linear transformations of data in layers of neurons, where neurons of successive layers are all connected to each others.
 
  RNN are a modification of feed-forward neural networks with recurrent connections along units forming a network along a temporal sequence, making them widely used for the forecasting of time-series data and natural-language processing. Important improvements over original RNN are Long-Short Term Memory (LSTM) networks, with units having internal states allowing learning longer-range temporal dependencies, and Gated Recurrent Unit (GRU) modifying LSTM units to make them more lightweight. 
 
-CNN have layers that are convolutional filters applied over the input data. CNN are great for use in computer vision and other image related tasks, as they take advantage of the fact that learning short-range dependencies is enough to perform well in many of those tasks, thus reducing the hypothesis space of learnable representations in an informed way. One CNN architecture of particular interest in the context of this work is U-Net, that has shown excellent results in e.g. semantic segmentation tasks, that are important for biomedical imaging and autonomous vehicle applications. U-Net follows a simple encoder-decoder architecture. The next section will describe current applications of artificial neural networks to precipitation nowcasting.
+CNN have layers that are convolutional filters applied over the input data. CNN are great for use in computer vision and other image related tasks, as they take advantage of the fact that learning short-range dependencies is enough to perform well in many of those tasks, thus reducing the hypothesis space of learnable representations in an informed way. One CNN architecture of particular interest in the context of this work is U-Net, that has shown excellent results in e.g. semantic segmentation tasks, that are important for biomedical imaging and autonomous vehicle applications. U-Net follows a simple encoder-decoder architecture. The encoder consists of intertwined downsampling and convolution layers, while the decoder similarly consists of intertwined upsampling and convolution layers. The next section will describe current applications of artificial neural networks to precipitation nowcasting.
 
 
 
 \subsection{Deep Learning Approaches to Nowcasting}
 
 
-There exists now many methods for producing deterministic nowcasts with machine learning. Most suffer the same problem of producing overly blurry nowcasts only after a few timesteps. Despite there having been marginal improvement with regards to this problem over the years, but it remains one important challenge when it comes to producing deterministic nowcasts. The following chapters will present some of the main advancements in Deep Learning for nowcasting since its introduction.
+There exists now many methods for producing deterministic nowcasts with machine learning. Most suffer the same problem of producing overly blurry nowcasts, i.e. losing high-resolution details, only after a few timesteps. Despite there having been marginal improvement with regards to this problem over the years, but it remains one important challenge when it comes to producing deterministic nowcasts. The following chapters will present some of the main advancements in Deep Learning for nowcasting since its introduction.
 
 \subsubsection*{Basic Approaches}
  
@@ -156,19 +157,19 @@ Another class of models that have gained traction lately for nowcasting are simp
 
 \subsubsection*{Notable Recent Improvements}
 
-Recently, Pan et al. improved the nowcasting of convective evolution by adding  polarimetric variables (ZDR and KDP) in addition to reflectivity scans as inputs to a U-Net based model \cite{pan_improving_2021}. These polarimetric variables are derived from double polarization weather radars and their values are strongly associated with life-cycles of convective cells. This work showcases the importance of multichannel data and not only relying on reflectivity if one wants to accurately model nonlinear evolution of precipitation.
+Recently, Pan et al. improved the nowcasting of convective evolution by adding  polarimetric variables in addition to reflectivity scans as inputs to a U-Net based model \cite{pan_improving_2021}. These polarimetric variables are derived from dual-polarization weather radars and their values are strongly associated with life-cycles of convective cells. This work showcases the importance of multichannel data and not only relying on reflectivity if one wants to accurately model nonlinear evolution of precipitation.
 
-Above models suffers badly the the problem of blurring stated above, as do all current models based on discriminative neural networks, which are networks mapping one input to one output. Prediction blurring is in part related to loss functions used, as losses like $\ell_2$ (Mean Squared Error (MSE)) and $\ell_1$ tend to act that way when minimized with some uncertainty present. This excessive blurring also hinders the prediction of useful patterns such as heavy localized rainfall. This phenomenon takes roots in the quick loss of predictability in smaller spatial scales, which has for effect of averaging them out over time. This is actually the same phenomenon as the blurring happening with the classical models containing multiscale autoregressive processes, such as S-PROG or STEPS. 
+The above models suffers badly the the problem of blurring stated above, as do all current models based on discriminative neural networks, which are networks mapping one input to one output. Prediction blurring is in part related to loss functions used, as losses like Mean Squared Error (MSE) and Mean Absolute Error (MAE) losses tend to act that way when minimized with some uncertainty present. This excessive blurring also hinders the prediction of useful patterns such as heavy localized rainfall. This phenomenon takes roots in the quick loss of predictability in smaller spatial scales, which has for effect of averaging them out over time. This is actually the same phenomenon as the blurring happening with the classical models containing multiscale autoregressive processes, such as S-PROG or STEPS. 
 Multi-Scale Structural Similarity Index (MS-SSIM), originally an image quality assessment metric \cite{wang_multiscale_2003}, has recently started to be used as a loss function in deep learning, particularly in image reconstruction tasks. One of its main assets is that its single-scale counterpart (SSIM) has been shown to reduce blurring in image reconstruction \cite{zhao_loss_2017} making it a good candidate loss function for nowcasting with neural networks.  Indeed in recent years, there has been some cases where MS-SSIM or SSIM started have started to be used in Deep learning based nowcasting models, such as the one of \citet{yin_application_2021} in 2021. Here both SSIM and MS-SSIM produced results surpassing MSE, with MS-SSIM giving the best results of the two. Most importantly, these loss functions seemed to better preserve high rain rates, which tended to vanish with traditional losses at higher leadtimes. 
 
-Perhaps one of the biggest breakthroughs made yet, is the use of Generative Adversarial Networks (GAN) by \citet{ravuri_skilful_2021} last year. This approach of using a generative model, i.e. one that generates samples from a probability distribution conditioned on past radar measurements, manages to solve the problem of nowcast blurring. GAN are a class of networks based on the competition between a generator network that generates the samples and discriminator(s) networks trying to discern whether these generated samples are real or fake. The generator then tries to fool the discriminators in a zero-sum game. Ravuri et al. use a generator network based on a convGRU architecture, nowcasting 90 minutes at once, two discriminators, and a regularization term penalizing deviations of generated samples at the grid level. The first discriminator ensures spatial consistency and the lack of blurring, while the second one ensures temporal consistency in generated sequences. The resulting generative model has slightly superior skill compared to existing approaches, but most importantly overwhelmingly over alternatives preserves features that make for a good nowcast from an operational forecaster point of view and is capable of providing probabilistic nowcasts which is very useful. \cite{ravuri_skilful_2021}
+Perhaps one of the biggest breakthroughs made yet, is the use of Generative Adversarial Networks (GAN) by \citet{ravuri_skilful_2021} last year. This approach of using a generative model, i.e. one that generates samples from a probability distribution conditioned on past radar measurements, manages to solve the problem of nowcast blurring. GAN are a class of networks based on the competition between a generator network that generates the samples and discriminator(s) networks trying to discern whether these generated samples are real or fake. The generator then tries to fool the discriminators in a zero-sum game. Ravuri et al. use a generator network based on a convGRU architecture, nowcasting 90 minutes at once, two discriminators, and a regularization term penalizing deviations of generated samples at the grid level. The first discriminator ensures spatial consistency and the lack of blurring, while the second one ensures temporal consistency in generated sequences. The resulting generative model has slightly superior skill compared to existing approaches, and importantly preserves high-resolution features while producing useful probabilistic nowcasts. \cite{ravuri_skilful_2021}
 
-There has so far been limited work in probabilistic nowcasting with Deep Learning. In addition to the GAN presented above that can be used for such purpose, a probabilistic nowcasting model called MetNet was developed by Sonderby et al. \cite{sonderby_metnet_2020}. The model is based on Axial Self-Attention by \citet{ho_axial_2019} and is capable of outperforming HRRR on probabilistic verification metrics for leadtimes of up to 8 hours. 
+In addition to this, there has so far been limited work in probabilistic nowcasting with Deep Learning. In addition to the GAN presented above that can be used for such purpose, a probabilistic nowcasting model called MetNet was developed by \citet{sonderby_metnet_2020}. The model is based on Axial Self-Attention by \citet{ho_axial_2019} and is capable of outperforming HRRR on probabilistic verification metrics for leadtimes of up to 8 hours. 
  
 \section{Bayesian Deep Learning}
 \label{section:bdl_theory}
 
-	Neural networks are extremely useful model that on the other hand are very complex, in the sense that they have many optimizable parameters. The effect of this is that they are sensible to \textit{overfitting}, meaning that if left unchecked they will learn spurious patterns in the data, over-adapting to the training dataset and worsening generalization ability. In order to counter this, different mechanisms exist that bias the neural network towards learning simpler representations that have better generalization ability when presented with out-of-training-data examples. This concept is known as \textit{regularization}. Over the past decades, many regularization mechanisms have been successfully developed and applied to the training of deep neural networks. Notable examples include dropout and weight decay, also known as L2-regularization.  
+	Neural networks are extremely useful model that on the other hand are very complex, in the sense that they have many optimizable parameters. The effect of this is that they are sensible to \textit{overfitting}, meaning that if left unchecked they will learn spurious patterns in the data, over-adapting to the training dataset and worsening generalization ability. In order to counter this, different mechanisms exist that bias the neural network towards learning simpler representations that have better generalization ability when presented with out-of-training-data examples. This concept is known as \textit{regularization}. Over the past decades, many regularization mechanisms have been successfully developed and applied to the training of deep neural networks. Notable examples include Dropout and weight decay, also known as $L_2$-regularization. \cite{srivastava2014dropout, bishop2006pattern} 
 	
 	One caveat of these classical regularization methods is that they do not enable representing the uncertainty of neural networks in unexplored regions, although they do improve performance in them. As it has understandably many benefits to make a neural network able to say "I don't know", a way to represent different plausible scenarios arising with novel data is needed. 
 	
@@ -177,6 +178,7 @@ There has so far been limited work in probabilistic nowcasting with Deep Learnin
 	Bayesian inference is one of the two paradigms for statistical inference along with frequentist inference. Statistical inference is the process of using data in order to infer properties of the underlying statistical distribution. The defining feature of Bayesian inference is that it bases itself on Bayes' rule defined as 
 	
 	\begin{equation}
+	\label{eq:bayes}
 		P(H \mid E) = \frac{P(H)P(E\mid H)}{P(E)},
 	\end{equation}
 	%
@@ -186,7 +188,7 @@ There has so far been limited work in probabilistic nowcasting with Deep Learnin
 	
 	The second inference method category is \textit{Variational Inference} (VI). The main idea behind variational inference is to turn the problem of finding the intractable true Bayesian posterior into that of finding the closest distribution from a limited distribution family (the variational family) with regards to the true posterior. This turns the problem of solving an integral into that of optimization, allowing the use of classical unconstrained optimization methods. 
 	
-	Dropout was surprisingly shown to be an instance of variational inference with a Bernoulli distributed posterior by Gal and Ghahramani\citet{gal_dropout_2016} in 2016. This legitimizes the use of Monte Carlo dropout, a technique used to get predictive uncertainty estimates from networks with dropout layers, by simply not switching off the layers for inference and thus drawing Monte Carlo samples of the data distribution. Although not as expressive as explicit Bayesian NN, MC dropout has no computational overhead and is simple to implement, making it a very popular alternative to BNN. 
+	Dropout was surprisingly shown to be an instance of variational inference with a Bernoulli distributed posterior by \citet{gal_dropout_2016} in 2016. This legitimizes the use of Monte Carlo dropout, a technique used to get predictive uncertainty estimates from networks with dropout layers, by simply not switching off the layers for inference and thus drawing Monte Carlo samples of the data distribution. Although not as expressive as explicit Bayesian NN, MC dropout has no computational overhead and is simple to implement, making it a very popular alternative to BNN. 
 	
 	In the context of Bayesian Deep Learning, the underlying neural network architecture will be referred to as the functional architecture or the functional model. Other components such as the inference method, the prior,  or the posterior modeling will be commonly referred to as the stochastic model. 
 	
@@ -196,7 +198,7 @@ There has so far been limited work in probabilistic nowcasting with Deep Learnin
 \label{section:vi}
 
 
-	Variational inference as a means of training Bayesian Neural Networks was first introduced by \citet{hinton_keeping_1993} in 1993. However it was not used for a long time before breakthroughs by \citet{graves_practical_2011} in 2011 and \citet{blundell_weight_2015} in 2015 permitted its use in large-scale neural networks. The following sections will introduce the loss function and optimization algorithm used, mostly based on the work of \citet{blundell_weight_2015}.
+	Variational inference as a means of training Bayesian Neural Networks was first introduced by \citet{hinton_keeping_1993} in 1993. However it was not used for a long time before breakthroughs by \citet{graves_practical_2011} in 2011 and \citet{blundell_weight_2015} in 2015 permitted its use in large-scale neural networks. The following sections will introduce the loss function and the optimization algorithm used, mostly based on the work of \citet{blundell_weight_2015}.
 	
 	\subsubsection*{Evidence Lower Bound Loss Function}
 	Finding the variational posterior $q(\pmb{w} \mid \theta)$ best approximating the true posterior is formalized as minimizing the Kullback-Leiber (KL)-divergence between the two distributions as 
@@ -204,35 +206,39 @@ There has so far been limited work in probabilistic nowcasting with Deep Learnin
 	\begin{equation}
 		\label{eq:kl}
 		\theta^* = \arg \min_{\theta} \mathrm{KL}
-		(
+		\left[
 		q(\pmb{w} \mid \theta) 
 		\mid \mid 
 		P(\pmb{w} \mid \mathcal{D})
-		),
+		\right],
 	\end{equation}
 	%
-	where $\theta$ refers to variational posterior parameters,$\pmb{w}$ to the weights, $\mathcal{D}$ to the data, $q$ to the variational distribution, and $P$ to the true distribution. The KL-divergence is defined as
+	where $\theta$ refers to variational posterior parameters,$\pmb{w}$ to the weights, $\mathcal{D}$ to the data, $q$ to the variational distribution, and $P$ to the true distribution. The KL-divergence is defined as \cite{bishop2006pattern}
 	
 	\begin{equation}
-	\mathrm{KL}((q(\pmb{w} \mid \theta) ||P(\pmb{w} \mid \mathcal{D}))) = \int q(\pmb{w} \mid \theta) \log \frac{q(\pmb{w} \mid \theta)}{P(\pmb{w} \mid \mathcal{D})} \mathrm{d}\theta.
+	\label{eq:kl_open}
+	\mathrm{KL}\left[q(\pmb{w} \mid \theta) ||P(\pmb{w} \mid \mathcal{D})\right] = \int_{\Theta} q(\pmb{w} \mid \theta) \log \frac{q(\pmb{w} \mid \theta)}{P(\pmb{w} \mid \mathcal{D})} \mathrm{d}\theta, 
 	\end{equation}
 	%
-	This definition can be used to turn the minimization objective into 
+	where $\Theta$ refers to the space spanned by $\theta$ parameters. Rewriting this definition as the expected value over $q(\pmb{w} \mid \theta)$, using the chain rule of probability $P(\pmb{w},\mathcal{D}) = P(\pmb{w} \mid \mathcal{D}) P(\mathcal{D})$, and rearranging, the minimization objective can be turned into 
 	
 	\begin{equation}
+	\label{eq:elbo_step1}
 		\arg \min_{\theta}
 		\mathbb{E}_{q(\pmb{w} \mid \theta)}[\log q(\pmb{w} \mid \theta)] -
 		\mathbb{E}_{q(\pmb{w} \mid \theta)}[P(\pmb{w},\mathcal{D})] + 
-		\log P(\mathcal{D}).
+		\log P(\mathcal{D}),
 	\end{equation} 
 	%
+	where $\mathbb{E}_{q(\pmb{w} \mid \theta)}$ denotes the expected value of the following expression over $q(\pmb{w} \mid \theta)$. 
 	 Here the evidence $P(\mathcal{D})$ is very difficult to estimate. Luckily though, the minimization objective does not depend on it, so a new objective called the evidence lower bound (ELBO) or variational free energy is used instead, which is defined as 
 	 
 	 \begin{equation}
-	 	\text{ELBO}(q) = -(\mathrm{KL}((q(\pmb{w}\mid\theta) ||P(\pmb{w}\mid\mathcal{D}))) - \log P(\mathcal{D})).
+	 \label{eq:elbo_step2}
+	 	\text{ELBO}(\mathcal{D}, \theta) = - \left[\mathrm{KL}\left[q(\pmb{w}\mid\theta) \mid \mid P(\pmb{w} \mid \mathcal{D})\right] - \log P(\mathcal{D})\right].
 	 \end{equation}
 	 %
-	 Solving for the evidence $\log P(\mathcal{D})$, it is clear that the ELBO is a veritable lower bound for the it, as KL-divergences can not be negative.  
+	 This is a maximization objective equivalent to substracting $\log P(\mathcal{D})$ from Eq. \eqref{eq:kl}. Solving for the evidence $\log P(\mathcal{D})$, it is clear that the ELBO is a veritable lower bound for the it, as KL-divergences can not be negative.  
 %	\begin{itemize}
 %		\item deriving ELBO -> DONE
 %		\item Bayes by Backprop and SVI -> DONE
@@ -242,22 +248,25 @@ There has so far been limited work in probabilistic nowcasting with Deep Learnin
 %		\item problems with VI DEL -> Discussions 
 %	\end{itemize}
 
-	The ELBO can be rewritten as
+	Reopening up Eq. \eqref{eq:elbo_step2} in the same way as for getting Eq. \eqref{eq:elbo_step1}, and using $P(\pmb{w} \mid \mathcal{D})P(\mathcal{D}) = P(\mathcal{D} \mid \pmb{w})P(\pmb{w})$, The ELBO can be rewritten as
 	
 	\begin{equation}
 	\label{eq:elbo}
 		\mathcal{F}(\mathcal{D}, \theta) = 
-		\mathrm{KL}[q(\pmb{w}\mid\theta) \mid\mid P(\pmb{w})] - \mathbb{E}_{q(\pmb{w}|\theta)}[\log(P(\mathcal{D} \mid \pmb{w}))],
+		%\mathrm{KL}[q(\pmb{w}\mid\theta) \mid\mid P(\pmb{w})] - \mathbb{E}_{q(\pmb{w}|\theta)}[\log P(\mathcal{D} \mid \pmb{w})],
+		\mathbb{E}_{q(\pmb{w} \mid \theta)}\left[
+		\log q(\pmb{w}\mid \rho) - \log P(\pmb{w}) - \log P(\mathcal{D} \mid \pmb{w})
+		\right]
 	\end{equation}
 	%
-	which is a form more suitable for the development of an optimization method. Here and from now on, The ELBO will be referred to with the $\mathcal{F}$ symbol. For the rest of this work, the variational posterior family will be assumed to be that of Gaussian distributions, as the \textit{Bayes-by-Backprop} (BBB) algorithm described in the following section works on this posterior family. 
+	which is a form more suitable for the development of an optimization method. Here and from now on in this section, The ELBO will be referred to with the $\mathcal{F}$ symbol. For the rest of this work, the variational posterior family will be assumed to be that of Gaussian distributions, as the \textit{Bayes-by-Backprop} (BBB) algorithm described in the following section works on this posterior family. 
 	
 	\subsubsection*{The Bayes-by-Backprop Algorithm}
 
-	In order to apply backpropagation to Bayesian Neural Networks with variational inference, any sampling operation must be made external to the network in order to allow gradients to flow backwards \cite{blundell_weight_2015}. This is accomplished by parametrizing the standard deviation $\sigma$, which is the parameter linked to uncertainty in weights, with a parameter $\rho \in \mathbb{R}$, such that $\sigma = \log(1 + \exp(\rho)) \in (0,\infty)$. 
-	This is known as the reparametrization trick. Weights $\pmb{w} = t(\sigma, \epsilon)$ are made deterministic functions of posterior parameters and the external stochastic noise $\epsilon$. This is what allows gradients to flow through the network by making sampling external. 
+	In order to apply backpropagation to Bayesian Neural Networks with variational inference, any sampling operation must be made independent of the network in order to allow gradients to flow backwards \cite{blundell_weight_2015}. This is accomplished by reparametrizing the positive standard deviation $\sigma_q$ of posterior distributions to a parameter $\rho \in \mathbb{R}$. This is accomplished with the transformation $\sigma_q = \log(1 + \exp(\rho)) \in (0,\infty)$. 
+	This is known as the reparametrization trick. Weights $\pmb{w} = t(\sigma_q, \epsilon)$ are made a deterministic function $t$ of posterior parameters and an external stochastic noise parameter $\epsilon$. Adding this parameter $\epsilon$ is what allows gradients to flow through the network by making sampling operation external to the network. 
 	
-	Using the reparametrization trick and the proposition
+	Using the the proposition
 	
 	\begin{equation}
 	\label{eq:prop}
@@ -266,14 +275,14 @@ There has so far been limited work in probabilistic nowcasting with Deep Learnin
 	\frac{\partial f(\pmb{w}, \theta)}{\partial \pmb{w}}\right]
 	\end{equation}
 	%
-	from Blundell et al. \cite{blundell_weight_2015}, the ELBO cost function (Eq. \eqref{eq:elbo}) can be rewritten as in a form amendable to minibatch optimization, yielding
+	from \citet{blundell_weight_2015}, the derivative of an expectation can be turned into the expectation of a derivative. This allows to approximate the ELBO as 
 	
 	\begin{equation}
 	\label{eq:mini_elbo}
 	\mathcal{F}(\mathcal{D}, \theta) \approx \sum_{i=1}^{n}\log q(\pmb{w}^{(i)}\mid\theta) - \log P(\pmb{w}^{(i)}) - \log P(\mathcal{D}\mid\pmb{w}^{(i)}),
 	\end{equation}
 	%
-	an unbiased Monte Carlo estimator of the ELBO. Here $\pmb{w}^{(i)}$ denotes the $i$:th Monte Carlo sample drawn the the posterior. The proposition \eqref{eq:prop} follows from the reparametrization trick.
+	which is an unbiased Monte Carlo estimator of the ELBO. Here $\pmb{w}^{(i)}$ refers to the $i$:th Monte Carlo sample drawn from the posterior distribution. The proposition \eqref{eq:prop} follows from the reparametrization trick, as demonstrated by \citet{blundell_weight_2015}.
 	
 	From the terms in Eq. \eqref{eq:mini_elbo}:
 	\begin{enumerate}
@@ -285,62 +294,42 @@ There has so far been limited work in probabilistic nowcasting with Deep Learnin
 	\end{enumerate}
 	
 	\vspace*{2mm}
-	The first two terms are grouped together as the complexity cost, while the last term is often called the Likelihood cost. With all of the conditions in place, optimization takes place in pretty much the same way as for basic backpropagation, only updating two variables instead of one ($\mu$ and $\rho$ instead of point estimates). The pseudocode for a training epoch using the Bayes-By-Backprop algorithm is shown in Algorithm \ref{alg:bbb}, where $\circ$ refers to point-wise multiplication.
+	The first two terms are grouped together as the complexity cost, while the last term is often called the Likelihood cost. With all of the conditions in place, optimization takes place in pretty much the same way as for basic backpropagation, only updating two variables instead of one ($\mu_q$ and $\rho$ instead of point estimates). The pseudocode for one optimization step using the Bayes-By-Backprop algorithm is shown in Algorithm \ref{alg:bbb}, where $\circ$ refers to element-wise multiplication. On line 1, sampling stochastic noise $\epsilon$ is performed in each layer. On line 2, weights are set using $\epsilon$. On line 3, the data $\mathcal{D}$ goes through the network and the ELBO is calculated, then on lines 4 and 5, Mean and variance posterior gradients are calculated through backpropagation. Finally on lines 6 and 7, posterior parameters are updated with these gradients.
 	
-%	\begin{enumerate}
-%		\item Sample $\epsilon \sim \mathcal{N}(0,1)$.
-%		\item Let  $ \pmb{w} = \mu + \log(1 + \exp(\rho)) \circ  \epsilon$, $\theta = (\mu, \rho)$, \\ $\circ$ referring to point-wise multiplication.
-%		\item Let $f(\pmb{w}, \theta) = \log(q(\pmb{w}\mid \rho)) - \log(P(\pmb{w})P(\mathcal{D} \mid \pmb{w}))$.
-%		\item Calculate gradients w.r.t. $\mu$ and $\sigma$:
-%		\begin{enumerate}
-%			\item $\Delta_\mu  = \frac{\partial f(\pmb{w},\theta)}{\partial \pmb{w}} + 
-%			\frac{\partial f(\pmb{w},\theta)}{\partial \mu}$ 
-%			
-%			\item $\Delta_\rho  = \frac{\partial f(\pmb{w},\theta)}{\partial \pmb{w}}\frac{\epsilon}{1 + \exp(-\rho)} +
-%			\frac{\partial f(\pmb{w},\theta)}{\partial \rho}$
-%		\end{enumerate}
-%		Then parameters are simply updated as:
-%		\begin{enumerate}
-%			\item $\mu \leftarrow \mu - \alpha \Delta_\mu$
-%			\item $\rho \leftarrow \rho - \alpha \Delta_\rho$ 
-%		\end{enumerate}
-%	\end{enumerate}
 	
 	\begin{algorithm}[h]
 		\caption{Bayes-By-Backprop}
 		\label{alg:bbb}
 		\begin{algorithmic}[1]
-			\For{\texttt{training example in dataset}}
-			\For{\texttt{sample taken per training example}}
-			\For{\texttt{parameter in model}}
 			\State Sample $\epsilon \sim \mathcal{N}(0,1)$ \Comment{Reparametrization}
-			\State $ \pmb{w} \gets \mu + \log(1 + \exp(\rho)) \circ  \epsilon$, $\theta \gets (\mu, \rho)$ \Comment{Weights}
-			\State $f(\pmb{w}, \theta) \gets \log(q(\pmb{w}\mid \rho)) - \log(P(\pmb{w})P(\mathcal{D} \mid \pmb{w}))$ \Comment{Loss}
-			\State $\Delta_\mu  \gets \frac{\partial f(\pmb{w},\theta)}{\partial \pmb{w}} + 
-			\frac{\partial f(\pmb{w},\theta)}{\partial \mu}$ \Comment{Gradient calculations}
-			\State $\Delta_\rho  \gets \frac{\partial f(\pmb{w},\theta)}{\partial \pmb{w}}\frac{\epsilon}{1 + \exp(-\rho)} +
-			\frac{\partial f(\pmb{w},\theta)}{\partial \rho}$
-			\State $\mu \gets \mu - \alpha \Delta_\mu$ \Comment{Posterior parameter updates}
+			\State $ \pmb{w} \gets \mu_q + \log(1 + \exp(\rho)) \circ  \epsilon$, $\theta \gets (\mu_q, \rho)$ \Comment{Weights}
+			\State $\mathcal{F}(\pmb{w}, \theta) \gets \log(q(\pmb{w}\mid \rho)) - \log(P(\pmb{w}) - \log P(\mathcal{D} \mid \pmb{w}))$ \Comment{Loss}
+			\State $\Delta_\mu  \gets \frac{\partial \mathcal{F}(\pmb{w},\theta)}{\partial \pmb{w}} + 
+			\frac{\partial \mathcal{F}(\pmb{w},\theta)}{\partial \mu_q}$ \Comment{Gradient calculations}
+			\State $\Delta_\rho  \gets \frac{\partial \mathcal{F}(\pmb{w},\theta)}{\partial \pmb{w}}\frac{\epsilon}{1 + \exp(-\rho)} +
+			\frac{\partial \mathcal{F}(\pmb{w},\theta)}{\partial \rho}$
+			\State $\mu_q \gets \mu_q - \alpha \Delta_\mu$ \Comment{Posterior parameter updates}
 			\State $\rho \gets \rho - \alpha \Delta_\rho$ 
-			\EndFor
-			\EndFor
-			\EndFor
 		\end{algorithmic}
 	\end{algorithm}
 	
 	\subsubsection*{Complexity Cost Weighting and Priors}
 	
-	The cost to be minimizing can be again rewritten as 
+	Assuming minibatch optimization, the ELBO from \eqref{eq:elbo} for the $i$:th minibatch can be again rewritten as 
 	
 	\begin{equation}
-		\mathcal{F}^\pi_i(\mathcal{D_i}, \theta) = \pi_i \mathrm{KL}[q(\pmb{w} \mid \theta) || P(\pmb{w})] - \mathbb{E}_{q(\pmb{w} \mid \theta)}[\log P(\mathcal{D}_i \mid \pmb{w})],
+		\mathcal{F}^\pi_i(\mathcal{D}_i, \theta) = \pi_i 
+		%\mathrm{KL}[q(\pmb{w} \mid \theta) || P(\pmb{w})] - \mathbb{E}_{q(\pmb{w} \mid \theta)}[\log P(\mathcal{D}_i \mid \pmb{w})],
+		\left[
+		\log q(\pmb{w}\mid \rho) - \log P(\pmb{w}) \right] - \log P(\mathcal{D_i} \mid \pmb{w})
+		,
 	\end{equation}
 	%
-	here $\pi_i$ being the relative weighting of the complexity cost in the $i$:th minibatch. 
-	There are many ways to weigh the complexity cost against the likelihood cost, but an usual constraint is that $\pi \in [0,1]^M$ and $\sum_{i=1}^{M} \pi_i = 1$. Graves et al. (2011) \cite{graves_practical_2011} used equal weighting as $\pi_i = 1/M$, but Blundell et al. (2015) \cite{blundell_weight_2015} found the scheme $\pi_i =\frac{2^{M-i}}{2^M - 1}$ to offer better performance in their experiments. 
+	here $\pi_i$ being the relative weighting of the complexity cost and $\mathcal{D}_i$ the data  in the $i$:th minibatch. 
+	There are many ways to weigh the complexity cost against the likelihood cost, but an usual constraint is that $\pi \in [0,1]^M$ and $\sum_{i=1}^{M} \pi_i = 1$. \citet{graves_practical_2011} used equal weighting as $\pi_i = 1/M$, but \citet{blundell_weight_2015} found the scheme $\pi_i =\frac{2^{M-i}}{2^M - 1}$ to offer better performance in their experiments. 
 
 	
-	The prior distribution $P(\pmb{w})$ is often chosen to be a diagonal Gaussian distribution, because it allows calculating the KL-divergence with regards to the Gaussian posterior analytically. A Gaussian prior placed on weights would be equivalent to L2-regularization, also known as weight decay. Recently, despite of the inability to analytically calculate KL-divergences using it, Gaussian scale mixture priors have also started to be used \cite{blundell_weight_2015, shridhar_comprehensive_2019} because of their properties facilitating optimization. These scale mixture priors, if containing two scales are defined as 
+	The prior distribution $P(\pmb{w})$ is often chosen to be a diagonal Gaussian distribution, because it allows calculating the KL-divergence with regards to the Gaussian posterior analytically. A Gaussian prior placed on weights would be equivalent to $L_2$- regularization, also known as weight decay. Recently, despite of the inability to analytically calculate KL-divergences using it, Gaussian scale mixture priors have also been used \cite{blundell_weight_2015, shridhar_comprehensive_2019} because of their properties facilitating optimization. These scale mixture priors, if containing two scales are defined as 
 	
 	\begin{equation}
 	\label{eq:gsm}
@@ -354,17 +343,17 @@ There has so far been limited work in probabilistic nowcasting with Deep Learnin
 
 	One problem with conventional Bayes-By-Backprop is that the same $\epsilon$ is used for each parameter in a layer. One side effect of this is that gradients of different weights are correlated, hindering the training. 
 	
-	\citet{kingma_variational_2015} introduced a modification to the reparametrization trick, called the \textit{local reparametrization trick} (LRT). This modification works similarly but rather than weights, pre-activation layer outputs are sampled using $\epsilon$, with a different $\epsilon$ for each output. This reduces variances in a minibatch, allowing for faster training overall. \citet{kingma_variational_2015} showed that the unbiased Monte Carlo estimator of log likelihood in \citet{blundell_weight_2015} has variance that does not decrease with batch size because of the contribution of batch member covariances due to shared $\epsilon$, and consequently designs an estimator with zero covariance, leading to the method above. Gradient variances with LRT thus are inversely proportional to batch size, leading to easier optimization with higher batch sizes. 
+	\citet{kingma_variational_2015} introduced a modification to the reparametrization trick, called the \textit{local reparametrization trick} (LRT). This modification works similarly but rather than weights, pre-activation layer outputs are sampled using $\epsilon$, with a different $\epsilon$ for each output. This reduces variances in a minibatch, allowing for faster training overall. \citet{kingma_variational_2015} showed that the unbiased Monte Carlo estimator of log likelihood in \citet{blundell_weight_2015} has variance that does not decrease with batch size because of the contribution of batch member covariances due to shared $\epsilon$, and consequently designs an estimator with zero covariance, leading to the method above. Gradient variances with LRT thus are inversely proportional to batch size, leading to easier optimization with larger batch sizes. 
 
-	Flipout by \citet{wen_flipout_2018} is another modification to Bayes-by-Backprop, attempting to solve the same problem. While LRT can only be used for fully-connected feed-forward neural networks with no weight sharing, Flipout can be used on other architectures too \cite{wen_flipout_2018}. Flipout works the same as BBB, except for the fact that it multiplies the sampled $\epsilon$ by a random sign matrix of the size of the parameter space. This way the $\epsilon$ are to some degree made pseudo-random, decreasing the gradient variances for a very meager computational cost.
+	Flipout by \citet{wen_flipout_2018} is another modification to Bayes-by-Backprop, attempting to solve the above problem. While LRT can only be used for fully-connected feed-forward neural networks with no weight sharing, Flipout can be used on other architectures too \cite{wen_flipout_2018}. Flipout works the same as BBB, except for the fact that it multiplies the sampled $\epsilon$ by a random sign matrix of the size of the parameter space. This way the $\epsilon$ are to some degree made pseudo-random, decreasing the gradient variances for a very meager addition to the computational cost.
 	
 
 
 \subsection{Uncertainty Decomposition in Deep Learning} 
 
-There exists techniques to decompose predictive uncertainty into aleatoric and epistemic uncertainties in deep learning. To model the epistemic component, these techniques base themselves on ensembles just like those produced by Bayesian Neural Networks, or the variability between ensemble members to be more precise. Strategies for modeling the aleatoric part differs between classification and regression tasks. In classification, heteroscedastic aleatoric uncertainty can be directly inferred from class logits without any network modification \cite{shridhar_comprehensive_2019, kwon_uncertainty_2020}.
+There exists techniques to decompose predictive uncertainty into aleatoric and epistemic uncertainties in deep learning which can be used with Bayesian Neural Networks. To model the epistemic component, these techniques base themselves on ensembles just like those produced by BNN, or the variability between ensemble members to be more precise. Strategies for modeling the aleatoric part differs between classification and regression tasks. In classification, heteroscedastic aleatoric uncertainty can be directly inferred from class logits without any network modification \cite{shridhar_comprehensive_2019, kwon_uncertainty_2020}.
 
-For regression on the other hand, there is a need to encode the uncertainty in the data as it is not there in the first place. By modeling the likelihood as homoscedastic Gaussian likelihood, one can learn a common homoscedastic uncertainty term for the dataset. By modeling the data as heteroscedastic Gaussian likelihood on the other hand, one can learn a different uncertainty term for each data point. This is done by separating the output of the network and its aleatoric uncertainty into two different channels towards the end of the network, and plugging these in the Gaussian likelihood accordingly \cite{kendall_what_2017}.
+For regression on the other hand, there is a need to encode the aleatoric uncertainty as it is not intrinsically present in network outputs. By modeling the likelihood as homoscedastic Gaussian likelihood, one can learn a common homoscedastic uncertainty term for the dataset. By modeling the data as heteroscedastic Gaussian likelihood on the other hand, one can learn a different uncertainty term for each data point. This is done by separating the output of the network and its aleatoric uncertainty into two different channels towards the end of the network, and plugging these in the Gaussian likelihood accordingly \cite{kendall_what_2017}.
 
 
 

@@ -1,16 +1,20 @@
-\addcontentsline{toc}{chapter}{Abbreviations and Acronyms}
-\chapter*{Abbreviations and Acronyms}
+\addcontentsline{toc}{chapter}{Acronyms and Symbols}
+\chapter*{Acronyms and Symbols}
 
 % The longtable environment should break the table properly to multiple pages, 
 % if needed
+\section*{Acronyms}
 
 \noindent
 \begin{longtable}{@{}p{0.25\textwidth}p{0.7\textwidth}@{}}
 FMI & Finnish Meteorological Institute \\
-DL & Deep learning \\
 NWP & Numerical Weather Prediction \\
+Z & Reflectivity factor (mm$^{6}$/m$^{3}$) \\
+dBZ & Decibel relative to Z \\
+DL & Deep learning \\
 NN & Neural Network \\
 BNN & Bayesian Neural Network \\
+ELBO & Evidence Lower Bound \\
 CNN & Convolutional Neural Network \\
 BCNN & Bayesian Convolutional Neural Network \\
 SVI & Stochastic Variational Inference \\
@@ -18,9 +22,6 @@ BBB & Bayes-By-Backprop \\
 NLL & Negative Log Likelihood \\
 STEPS & Short-Term Ensemble Prediction System \\
 LINDA & Lagrangian Integro-Difference equation model with Autoregression\\
-Z & Reflectivity factor \\
-dBZ & Decibel relative to Z \\
-ELBO & Evidence Lower Bound \\
 CSI & Critical Success Index \\
 ETS & Equitable Threat Score \\
 FAR & False Alarm Rate \\
@@ -32,5 +33,20 @@ RAPSD & Radially-averaged Power Spectral Density \\
 CRPS & Continuous Ranked Probability Score \\
 ROC & Receiver Operating Characteristic \\
 AUC & Area Under the Curve \\
-STD & Standard Distribution \\
+\end{longtable}
+
+\vspace*{5mm}
+
+\section*{Symbols}
+
+Possibly confusing symbols are listed here (non-exhaustively).
+
+\noindent
+\begin{longtable}{@{}p{0.25\textwidth}p{0.7\textwidth}@{}}
+$\sigma_q$ & Gaussian Posterior standard deviation \\
+$\mu_q$ & Gaussian Posterior mean \\
+$\sigma_\ell$ & Gaussian Negative Log Likelihood observational noise parameter \\
+$\sigma_1$, $\sigma_2$ & Gaussian Scale Mixture prior standard deviations one and two \\
+$\sigma_P$ & Gaussian Prior standard deviation \\
+$\mu_P$ & Gaussian Prior mean \\
 \end{longtable}
