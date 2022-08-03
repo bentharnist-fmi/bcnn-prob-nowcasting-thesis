@@ -73,7 +73,7 @@
 % Note that the option pdftext is used for pdflatex; there is no
 % pdflatex option. 
 % ------------------------------------------------------------------
-\documentclass[12pt,a4paper,oneside,pdftex]{report}
+\documentclass[12pt,a4paper,oneside,pdftex, a-1b]{report}
 
 % The input files (tex files) are encoded with the latin-1 encoding 
 % (ISO-8859-1 works). Change the latin1-option if you use UTF8 
@@ -92,7 +92,7 @@
 % going to use.
 % Examples of valid language codes: english (or USenglish), british, 
 % finnish, swedish; and so on.
-\usepackage[english, finnish, swedish, danish]{babel}
+\usepackage[english, finnish, swedish]{babel}
 
 
 % Font selection
@@ -447,7 +447,7 @@ The predictive skill of the developed model, abreviated BCNN, is evaluated again
 % ------------------------------------------------------------------
 \thesisabstract{finnish}{
 
-Sateen lähihetki-ennustaminen viittaa sen ennustamiseen ajanjaksolla joka ulottuu minuuteista muutamaan tuntiin. Tähän yleensä lähestytään käyttäen malleja, joille syötetään ajantasaisia säätutkien heijastuvuusmittauksia, jotka korreloivat havaitun sateen kanssa. Luotettavien lähihetken sateen todennäköisyys ennusteiden aikaansaaminen korkealla paikkaresoluutiolla on yhteiskunnallisesti tärkeä haaste. Tämä johtuu etenkin rankkasateiden ja niitä seuraavien äkkitulvien vaarasta ja taloudellisista vahingoista. %Esimerkkejä ovat suurien rakeiden aiheuttamat tuhot ja paikallisten rankkasateiden aikaansaamat äkkitulvat.
+Sateen lähihetki-ennustaminen viittaa sen ennustamiseen ajanjaksolla joka ulottuu minuuteista muutamaan tuntiin. Tähän yleensä lähestytään käyttäen malleja, joille syötetään ajantasaisia säätutkien heijastuvuusmittauksia, jotka korreloivat havaitun sateen kanssa. Luotettavien lähihetken sateen todennäköisyys ennusteiden aikaansaaminen korkealla paikkaresoluutiolla on yhteiskunnallisesti tärkeä haaste. Tämä johtuu etenkin rankkasateiden ja niitä seuraavien äkkitulvien vaarasta ja taloudellisista vahingoista. 
 
 Tässä työssä aiemmin sademäärien piste-ennusteisiin käytetty Konvolutiivinen Neuroverkko (CNN) muunnetaan Bayesilaiseksi Neuroverkoksi (BNN) tuottaakseen parven eri ennuste-skenaarioista, jolla estimoidaan sadetodennäköisyyksiä. BNN:n toiminta perustuu verkon parametrien mallintamiseen todennäköisyysjakaumina, jotka estimoidaan käyttäen Bayesilaista päättelyä. Tässä työssä käytetään normaalijakaumia, jonka parametrit opitaan Stokastinen variationaalinen menetelmän (SVI) avulla. Ennuste parvet muodostetaan tällöin koulutetun mallin parametrien Monte Carlo otannalla, täten indusoiden ennuste-jakauman. 
 
